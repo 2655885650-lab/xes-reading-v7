@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no,email=no">
+<meta name="theme-color" content="#0f0a1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="学而思智慧阅读 · 名著闯关：把整本书读出来变成一场 RPG 冒险，覆盖西游记、水浒传、三国、红楼等。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="名著闯关 · 学而思智慧阅读">
+<meta property="og:description" content="把整本书读出来变成一场 RPG 冒险。">
+<meta property="og:image" content="assets/share-cover-quiz.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f0a1e'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23FFD700' font-family='PingFang SC,sans-serif' font-weight='700'%3E闯%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<title id="pageTitle">阅读闯关 · 学而思智慧阅读</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#FF6B35;--gold:#FFD700;--gold-dark:#FFA500;
+  --success:#4ADE80;--danger:#FF4757;
+  --purple:#A855F7;--blue:#60A5FA;--pink:#F472B6;--cyan:#22D3EE;--orange:#FB923C;
+  --green:#34D399;--red:#F87171;
+}
+html,body{height:100%;overflow:hidden;background:#0f0a1e}
+body{font-family:-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;color:#fff;touch-action:manipulation;user-select:none}
+#root{width:100%;height:100%;max-width:var(--container-w,430px);margin:0 auto;position:relative;overflow:hidden}
+
+/* ====== 地图视图 ====== */
+#map-view{position:absolute;inset:0;overflow:hidden;transition:opacity .4s}
+#map-view.hidden{opacity:0;pointer-events:none}
+
+/* 背景层 */
+.map-bg-layer{position:fixed;top:0;left:50%;transform:translateX(-50%);width:var(--container-w,430px);height:100%;z-index:0;pointer-events:none}
+.map-bg-img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;opacity:0.8}
+.map-bg-mask{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,10,30,0.3) 0%,rgba(15,10,30,0.5) 50%,rgba(15,10,30,0.85) 100%);z-index:1}
+
+/* 滚动层 */
+.map-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch}
+.map-scroll::-webkit-scrollbar{display:none}
+.map-content{position:relative;min-height:1400px;padding:0 0 120px}
+
+/* HUD顶栏 - 毛玻璃效果 */
+.hud{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;
+  background:rgba(15,10,30,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hud-left{display:flex;align-items:center;gap:8px}
+.hud-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FFD700);display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid rgba(255,215,0,0.6)}
+.hud-name{font-size:13px;font-weight:600}
+.hud-title{font-size:10px;color:var(--gold);opacity:0.8}
+.hud-right{display:flex;gap:6px}
+.hud-pill{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,0.12);padding:5px 10px;border-radius:16px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
+.hud-pill.gold{color:#FFE55C}
+.hud-pill.purple{color:#C4B5FD}
+
+/* 商城引力Tab */
+.shop-teaser{position:sticky;top:50px;z-index:19;margin:6px 12px;display:flex;align-items:center;gap:10px;overflow-x:auto;padding:0;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.shop-teaser::-webkit-scrollbar{display:none}
+.st-item{flex-shrink:0;scroll-snap-align:start;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;
+  background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .2s;min-width:120px;white-space:nowrap}
+.st-item:active{transform:scale(0.95);background:rgba(255,255,255,0.18)}
+.st-item.hot{border-color:rgba(255,107,53,0.5);background:rgba(255,107,53,0.15)}
+.st-item.new{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.15)}
+.st-item .sti-icon{font-size:22px;flex-shrink:0}
+.st-item .sti-info{display:flex;flex-direction:column;gap:1px}
+.st-item .sti-name{font-size:11px;font-weight:700;line-height:1.2}
+.st-item .sti-price{font-size:9px;color:var(--gold);opacity:0.8}
+.st-hot-tag{position:absolute;top:-6px;right:-6px;background:linear-gradient(135deg,#FF4757,#FF6B35);color:#fff;font-size:8px;padding:2px 5px;border-radius:6px;font-weight:700}
+
+/* 标题区 */
+.map-hero{text-align:center;padding:20px 20px 24px;position:relative;z-index:2}
+.map-hero h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,#FFD700,#FF6B35,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+.map-hero p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px}
+.streak-badge{display:inline-flex;align-items:center;gap:4px;margin-top:8px;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);padding:4px 12px;border-radius:16px;font-size:11px;color:var(--primary)}
+
+/* SVG路径 */
+.path-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* 关卡节点 */
+.nodes-container{position:relative;z-index:2;padding-top:20px}
+.node-wrapper{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform .2s}
+.node-wrapper:active{transform:scale(0.92)}
+.node-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;position:relative;transition:all .3s}
+.node-circle::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;transition:all .3s}
+.node-wrapper.unlocked .node-circle{background:linear-gradient(135deg,#FF6B35,#FF8F6B);box-shadow:0 4px 20px rgba(255,107,53,0.5)}
+.node-wrapper.unlocked .node-circle::after{border-color:rgba(255,107,53,0.4);animation:ringPulse 2s infinite}
+.node-wrapper.completed .node-circle{background:linear-gradient(135deg,#10B981,#4ADE80);box-shadow:0 4px 16px rgba(74,222,128,0.4)}
+.node-wrapper.completed .node-circle::after{border-color:rgba(74,222,128,0.3)}
+.node-wrapper.boss .node-circle{width:70px;height:70px;font-size:30px;background:linear-gradient(135deg,#F59E0B,#FFD700);box-shadow:0 4px 24px rgba(255,215,0,0.5)}
+.node-wrapper.boss .node-circle::after{border-color:rgba(255,215,0,0.4);animation:ringPulse 1.5s infinite}
+.node-wrapper.locked .node-circle{background:rgba(255,255,255,0.06);border:2px dashed rgba(255,255,255,0.15)}
+.node-wrapper.locked{opacity:0.45;cursor:not-allowed}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:0.5}}
+
+.node-label{margin-top:6px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.7);text-align:center;max-width:72px}
+.node-stars{display:flex;gap:1px;margin-top:2px;font-size:12px}
+.node-stars .empty{opacity:0.2}
+
+/* 场景装饰 */
+.deco{position:absolute;font-size:20px;opacity:0.4;animation:decoFloat 5s ease-in-out infinite;pointer-events:none;z-index:1}
+@keyframes decoFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+
+/* 商城按钮 */
+.shop-fab{position:fixed;bottom:24px;right:24px;z-index:100;width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--pink));border:none;font-size:22px;
+  box-shadow:0 4px 20px rgba(168,85,247,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  animation:fabBounce 3s ease-in-out infinite}
+@keyframes fabBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ====== 答题视图（游戏化RPG风格） ====== */
+#quiz-view{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;transition:opacity .3s,transform .3s}
+#quiz-view.hidden{opacity:0;pointer-events:none;transform:translateY(20px)}
+
+/* 答题背景图层 */
+.quiz-bg-layer{position:absolute;inset:0;z-index:0}
+.quiz-bg-img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.quiz-bg-mask{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.6) 60%,rgba(0,0,0,0.85) 100%);z-index:1}
+
+/* 顶部HUD */
+.quiz-hud{position:relative;z-index:2;padding:10px 14px;display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.quiz-back-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.quiz-back-btn:active{transform:scale(0.9)}
+.quiz-title{flex:1;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
+.quiz-score-pill{display:flex;align-items:center;gap:3px;font-size:12px;color:#FFE55C;font-weight:700;background:rgba(255,215,0,0.15);padding:4px 10px;border-radius:12px}
+
+/* 状态行 */
+.quiz-stats{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:4px 14px}
+.hearts-bar{display:flex;gap:2px}
+.heart-icon{font-size:16px;transition:all .3s;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3))}
+.heart-icon.lost{opacity:0.2;transform:scale(0.8)}
+.combo-tag{background:linear-gradient(135deg,#FF6B35,#F59E0B);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;opacity:0;transform:scale(0.5);transition:all .3s;box-shadow:0 2px 8px rgba(255,107,53,0.4)}
+.combo-tag.show{opacity:1;transform:scale(1)}
+.q-num{font-size:11px;color:rgba(255,255,255,0.5)}
+
+/* 进度+计时 */
+.quiz-bars{position:relative;z-index:2;padding:6px 14px 0}
+.progress-track{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--pink));transition:width .4s}
+.timer-track{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden}
+.timer-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--success),var(--gold),var(--danger));transition:width .1s linear}
+
+/* ====== 游戏化题目区 ====== */
+.quiz-body{position:relative;z-index:2;flex:1;overflow-y:auto;padding:8px 14px 12px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px}
+.quiz-body::-webkit-scrollbar{display:none}
+
+/* NPC对话气泡式题目 */
+.q-npc-area{display:flex;gap:10px;align-items:flex-start;animation:npcPopIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes npcPopIn{from{opacity:0;transform:translateY(-20px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.q-npc-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FFD700,#FF6B35);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid rgba(255,215,0,0.5);box-shadow:0 2px 12px rgba(0,0,0,0.3);animation:npcBob 2s ease-in-out infinite}
+@keyframes npcBob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.q-bubble{flex:1;background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.18);border-radius:18px;border-top-left-radius:4px;padding:12px 14px;position:relative;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.q-bubble::before{content:'';position:absolute;left:-8px;top:14px;width:0;height:0;
+  border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid rgba(255,255,255,0.18)}
+.q-dim-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 8px;border-radius:8px;margin-bottom:6px}
+.q-dim-badge.dim-知识{background:rgba(96,165,250,0.2);color:#93C5FD}
+.q-dim-badge.dim-理解{background:rgba(52,211,153,0.2);color:#6EE7B7}
+.q-dim-badge.dim-评鉴{background:rgba(168,85,247,0.2);color:#C4B5FD}
+.q-dim-badge.dim-创意{background:rgba(251,146,60,0.2);color:#FED7AA}
+.q-dim-badge.dim-价值{background:rgba(244,114,182,0.2);color:#F9A8D4}
+.q-stem{font-size:14px;line-height:1.65;font-weight:500;color:#fff}
+
+/* ====== 游戏化选项 ====== */
+.opts-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;animation:optsFadeIn .4s ease .2s both}
+@keyframes optsFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.opt-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1.5px solid rgba(255,255,255,0.12);border-radius:16px;cursor:pointer;transition:all .2s;font-size:12px;line-height:1.4;text-align:center;
+  position:relative;overflow:hidden}
+.opt-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.05),transparent);pointer-events:none}
+.opt-btn:active:not(.disabled){transform:scale(0.95);background:rgba(255,255,255,0.12)}
+.opt-btn .opt-emoji{font-size:28px;line-height:1}
+.opt-btn .opt-text{font-size:11px;font-weight:500;color:rgba(255,255,255,0.9)}
+.opt-btn.correct{border-color:var(--success);background:rgba(74,222,128,0.15);animation:correctPop .4s ease;box-shadow:0 0 20px rgba(74,222,128,0.3)}
+.opt-btn.wrong{border-color:var(--danger);background:rgba(255,71,87,0.1);animation:shake .4s}
+.opt-btn.disabled{pointer-events:none;opacity:0.4}
+.opt-btn.reveal-correct{border-color:var(--success);background:rgba(74,222,128,0.08)}
+@keyframes correctPop{0%{transform:scale(1)}30%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+/* 拖拽排序 — 卡片堆叠风格 */
+.drag-zone{display:flex;flex-direction:column;gap:6px;animation:optsFadeIn .4s ease .2s both}
+.drag-row{display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;font-size:12px;cursor:grab;transition:all .15s}
+.drag-row:active{cursor:grabbing;border-color:var(--cyan);background:rgba(34,211,238,0.1);transform:scale(1.02)}
+.drag-row .drag-idx{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;color:#000}
+.drag-row .drag-arrows{display:flex;flex-direction:column;gap:0;margin-left:auto;font-size:9px;opacity:0.5;line-height:1}
+.drag-row .drag-arrows span{cursor:pointer;padding:2px 6px;border-radius:4px}
+.drag-row .drag-arrows span:active{background:rgba(255,255,255,0.15);opacity:1}
+
+/* 连线配对 — 宝箱配对风格 */
+.match-zone{display:flex;gap:10px;animation:optsFadeIn .4s ease .2s both}
+.match-col{flex:1;display:flex;flex-direction:column;gap:6px}
+.match-pill{padding:10px 8px;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;font-size:11px;text-align:center;cursor:pointer;transition:all .15s;line-height:1.4}
+.match-pill:active{transform:scale(0.96)}
+.match-pill.selected{border-color:var(--cyan);background:rgba(34,211,238,0.15);box-shadow:0 0 16px rgba(34,211,238,0.25)}
+.match-pill.paired{border-color:var(--success);background:rgba(74,222,128,0.1);opacity:0.5;pointer-events:none}
+
+/* 确认按钮 */
+.submit-btn{margin-top:10px;padding:12px;width:100%;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;color:#fff;transition:all .15s;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.submit-btn:active{transform:scale(0.97)}
+.submit-btn.cyan{background:linear-gradient(135deg,#22D3EE,#60A5FA)}
+.submit-btn.purple{background:linear-gradient(135deg,#A855F7,#F472B6)}
+
+/* 解析框 — 卷轴风格 */
+.explain-area{margin-top:8px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.7;display:none;animation:slideUp .3s;
+  background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,215,0,0.2)}
+.explain-area.show{display:block}
+.explain-area.good{border-color:rgba(74,222,128,0.3);color:#86EFAC}
+.explain-area.bad{border-color:rgba(255,71,87,0.3);color:#FCA5A5}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* 下一题按钮 */
+.next-btn{position:relative;z-index:2;margin:10px 14px 20px;padding:14px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),#FF8F6B);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;display:none;box-shadow:0 4px 20px rgba(255,107,53,0.4);letter-spacing:1px}
+.next-btn.show{display:block;animation:slideUp .3s}
+.next-btn:active{transform:scale(0.97);opacity:0.9}
+
+/* ====== 全屏反馈 ====== */
+.feedback-screen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s}
+.feedback-screen.show{opacity:1}
+.fb-emoji{font-size:64px;animation:fbPop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fbPop{0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+.fb-text{font-size:18px;font-weight:700;margin-top:8px;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.fb-score{font-size:13px;margin-top:4px;font-weight:600}
+
+/* 金币飞 */
+.coin-particle{position:fixed;z-index:199;font-size:18px;pointer-events:none;animation:coinUp .9s ease-out forwards}
+@keyframes coinUp{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:1;transform:translateY(-50px) scale(1.3)}100%{opacity:0;transform:translateY(-100px) scale(0.4)}}
+
+/* 撒花 */
+.confetti-piece{position:fixed;z-index:198;pointer-events:none;border-radius:2px;animation:confDrop 1.4s ease-out forwards}
+@keyframes confDrop{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(90vh) rotate(600deg) scale(0.3)}}
+
+/* 连击爆炸 */
+.combo-burst{position:fixed;top:50%;left:50%;z-index:201;font-size:32px;font-weight:900;pointer-events:none;
+  transform:translate(-50%,-50%);animation:burstAnim .8s ease-out forwards;
+  background:linear-gradient(135deg,#FFD700,#FF6B35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;filter:drop-shadow(0 2px 8px rgba(255,107,53,0.5))}
+@keyframes burstAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}100%{opacity:0;transform:translate(-50%,-60%) scale(0.8)}}
+
+/* ====== 结算视图 ====== */
+#result-view{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;
+  background:radial-gradient(ellipse at 50% 30%,rgba(99,102,241,0.15),transparent 60%),#0f0a1e;transition:opacity .3s}
+#result-view.hidden{opacity:0;pointer-events:none}
+.res-emoji{font-size:72px;animation:fbPop .6s cubic-bezier(.34,1.56,.64,1)}
+.res-title{font-size:22px;font-weight:800;margin:12px 0 4px}
+.res-sub{font-size:13px;color:rgba(255,255,255,0.5)}
+.res-stars{font-size:32px;margin:16px 0;letter-spacing:4px}
+.res-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;margin:16px 0}
+.res-cell{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 6px;text-align:center}
+.res-cell .rv{font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.res-cell .rl{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px}
+.res-rewards{width:100%;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);border-radius:14px;padding:14px;margin:16px 0}
+.res-rewards h4{font-size:12px;color:var(--gold);margin-bottom:8px}
+.rw-list{display:flex;flex-wrap:wrap;gap:6px}
+.rw-tag{font-size:11px;background:rgba(255,215,0,0.1);padding:3px 10px;border-radius:8px;color:var(--gold)}
+.res-btns{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.res-btns button{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-fire{background:linear-gradient(135deg,var(--primary),#FF8F6B);color:#fff;box-shadow:0 4px 16px rgba(255,107,53,0.3)}
+.btn-dim{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff}
+
+/* ====== 商城视图 ====== */
+#shop-view{position:absolute;inset:0;z-index:70;background:#0f0a1e;overflow-y:auto;transition:opacity .3s}
+#shop-view.hidden{opacity:0;pointer-events:none}
+#shop-view::-webkit-scrollbar{display:none}
+.shop-hdr{display:flex;align-items:center;padding:14px 16px;gap:10px}
+.shop-hdr button{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.shop-hdr h2{flex:1;font-size:17px;font-weight:700}
+.shop-bal{font-size:13px;color:var(--gold);font-weight:600}
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 40px}
+.shop-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.shop-card:active{transform:scale(0.96)}
+.shop-card .sc-icon{font-size:32px;margin-bottom:6px}
+.shop-card .sc-name{font-size:12px;font-weight:600;margin-bottom:3px}
+.shop-card .sc-desc{font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:8px;line-height:1.3}
+.shop-card .sc-price{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--gold);font-weight:600;background:rgba(255,215,0,0.1);padding:3px 10px;border-radius:8px}
+.shop-card.owned{opacity:0.6;border-color:var(--success)}
+.shop-card.owned .sc-price{color:var(--success)}
+.shop-card .st-hot-tag{position:absolute;top:-6px;right:4px;background:linear-gradient(135deg,#FF4757,#FF6B35);color:#fff;font-size:8px;padding:2px 6px;border-radius:6px;font-weight:700;z-index:1}
+
+/* Toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);z-index:300;
+  background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);padding:10px 20px;border-radius:20px;
+  font-size:12px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ====== 响应式适配：平板竖屏 (768px ~ 1023px) ====== */
+@media (min-width:768px) and (max-width:1023px){
+  :root{--container-w:600px}
+  .hud{padding:12px 20px}
+  .hud-avatar{width:44px;height:44px;font-size:22px}
+  .hud-name{font-size:15px}
+  .hud-pill{font-size:13px;padding:6px 12px}
+  .map-hero h1{font-size:28px}
+  .map-hero p{font-size:14px}
+  .node-circle{width:72px;height:72px;font-size:28px}
+  .node-wrapper.boss .node-circle{width:84px;height:84px;font-size:34px}
+  .node-label{font-size:13px;max-width:90px}
+  .map-content{min-height:1600px;padding:0 0 140px}
+  .shop-fab{width:60px;height:60px;font-size:26px;bottom:32px;right:32px}
+  .quiz-hud{padding:14px 20px}
+  .quiz-title{font-size:16px}
+  .quiz-body{padding:14px 24px 20px;gap:14px}
+  .q-npc-avatar{width:56px;height:56px;font-size:28px}
+  .q-stem{font-size:16px}
+  .opts-list{gap:12px}
+  .opt-btn{padding:16px 12px;border-radius:18px}
+  .opt-btn .opt-emoji{font-size:34px}
+  .opt-btn .opt-text{font-size:13px}
+  .drag-row{padding:14px 16px;font-size:14px}
+  .match-pill{padding:14px 12px;font-size:13px}
+  .explain-area{font-size:14px;padding:16px 18px}
+  .next-btn{margin:14px 24px 28px;padding:16px;font-size:16px}
+  .res-emoji{font-size:88px}
+  .res-title{font-size:26px}
+  .res-grid{gap:14px}
+  .res-cell{padding:18px 10px}
+  .res-cell .rv{font-size:24px}
+  .shop-grid{grid-template-columns:1fr 1fr 1fr;gap:14px;padding:0 24px 40px}
+}
+
+/* ====== 横版模式：电脑/大屏 (≥1024px) ====== */
+@media (min-width:1024px){
+  :root{--container-w:100%}
+  html,body{overflow:hidden}
+  #root{max-width:100%;width:100%;height:100vh}
+
+  /* -- 地图视图：横版 -- */
+  #map-view{display:flex;flex-direction:column;height:100vh}
+  .map-bg-layer{width:100%;left:0;transform:none}
+  .map-scroll{position:relative;flex:1;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:column}
+  .map-scroll::-webkit-scrollbar{height:6px}
+  .map-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:3px}
+
+  .hud{position:sticky;top:0;z-index:20;padding:12px 32px;flex-shrink:0}
+  .hud-avatar{width:44px;height:44px;font-size:22px}
+  .hud-name{font-size:15px}
+  .hud-pill{font-size:13px;padding:6px 14px}
+
+  .shop-teaser{position:relative;top:0;flex-shrink:0;margin:0 32px;padding:8px 0}
+
+  .map-hero{padding:12px 32px 8px;flex-shrink:0}
+  .map-hero h1{font-size:28px}
+  .map-hero p{font-size:14px}
+  .streak-badge{margin-top:4px}
+
+  /* 地图内容：横向滚动，节点水平排列 */
+  .map-content{
+    min-height:unset !important;
+    height:100%;
+    display:flex;
+    align-items:center;
+    padding:20px 60px 20px 40px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    flex:1;
+    position:relative;
+  }
+  .map-content::-webkit-scrollbar{height:6px}
+  .map-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px}
+
+  /* 节点容器：横向flex */
+  .nodes-container{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    padding:0 20px;
+    min-width:max-content;
+    height:auto;
+    position:relative;
+    z-index:2;
+  }
+  .node-wrapper{
+    position:relative !important;
+    left:auto !important;
+    top:auto !important;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .node-circle{width:76px;height:76px;font-size:30px}
+  .node-wrapper.boss .node-circle{width:90px;height:90px;font-size:36px}
+  .node-label{font-size:13px;max-width:90px;margin-top:8px}
+
+  /* 横版时隐藏SVG竖向路径 */
+  .path-svg{display:none}
+  /* 装饰隐藏或减少干扰 */
+  .deco{display:none}
+
+  /* 横版节点间连接线 */
+  .nodes-container .node-wrapper:not(:last-child)::after{
+    content:'';
+    position:absolute;
+    right:-24px;
+    top:50%;
+    width:24px;
+    height:3px;
+    background:linear-gradient(90deg,rgba(255,107,53,0.6),rgba(168,85,247,0.4));
+    border-radius:2px;
+    transform:translateY(-50%);
+    box-shadow:0 0 6px rgba(255,107,53,0.3);
+  }
+
+  .shop-fab{bottom:24px;right:32px;width:56px;height:56px;font-size:24px}
+
+  /* -- 答题视图：横版左右分栏 -- */
+  #quiz-view{display:flex;flex-direction:column;height:100vh}
+  .quiz-bg-layer{position:absolute;inset:0}
+  .quiz-hud{flex-shrink:0;padding:12px 32px;z-index:2}
+  .quiz-title{font-size:17px}
+  .quiz-stats{padding:4px 32px}
+  .quiz-bars{padding:4px 32px 0}
+
+  .quiz-body{
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:auto 1fr auto;
+    gap:20px 40px;
+    padding:20px 48px 16px;
+    max-width:1200px;
+    margin:0 auto;
+    width:100%;
+    align-content:center;
+    overflow-y:auto;
+  }
+  /* NPC区域占左列全部 */
+  .q-npc-area{
+    grid-column:1;
+    grid-row:1 / -1;
+    align-self:center;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .q-npc-avatar{width:72px;height:72px;font-size:36px;margin-bottom:12px}
+  .q-bubble{border-radius:18px;border-top-left-radius:18px;padding:20px 24px}
+  .q-bubble::before{display:none}
+  .q-stem{font-size:18px;line-height:1.8}
+  .q-dim-badge{font-size:11px;padding:3px 10px}
+
+  /* 选项区域占右列 */
+  .opts-list{
+    grid-column:2;
+    grid-row:1 / -1;
+    align-self:center;
+    gap:14px;
+  }
+  .opt-btn{padding:20px 16px;border-radius:18px}
+  .opt-btn .opt-emoji{font-size:36px}
+  .opt-btn .opt-text{font-size:14px}
+
+  .drag-zone{grid-column:2;grid-row:1 / -1;align-self:center}
+  .drag-row{padding:14px 18px;font-size:15px;border-radius:14px}
+
+  .match-zone{grid-column:2;grid-row:1 / -1;align-self:center}
+  .match-pill{padding:14px 12px;font-size:14px;border-radius:14px}
+
+  .explain-area{grid-column:1 / -1;font-size:14px;padding:14px 20px;border-radius:14px}
+  .submit-btn{grid-column:2}
+
+  .next-btn{margin:8px 48px 20px;padding:16px;font-size:16px;border-radius:16px;flex-shrink:0}
+
+  /* -- 结算视图：横版居中 -- */
+  #result-view{padding:40px;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:20px 48px}
+  .res-emoji{font-size:80px}
+  .res-title{font-size:26px;width:100%;text-align:center}
+  .res-sub{width:100%;text-align:center}
+  .res-stars{width:100%;text-align:center;font-size:28px}
+  .res-grid{grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:440px}
+  .res-cell .rv{font-size:22px}
+  .res-rewards{max-width:440px}
+  .res-btns{max-width:440px;flex-direction:row;gap:12px}
+  .res-btns button{flex:1;padding:14px;font-size:14px}
+
+  /* -- 商城：横版多列 -- */
+  #shop-view{height:100vh}
+  .shop-grid{grid-template-columns:repeat(4,1fr);gap:14px;padding:0 32px 40px}
+  .shop-card{padding:18px 12px;border-radius:16px}
+  .shop-card .sc-icon{font-size:36px}
+  .shop-card .sc-name{font-size:13px}
+}
+
+/* ====== 超宽屏 (≥1440px) ====== */
+@media (min-width:1440px){
+  .quiz-body{max-width:1400px;gap:24px 60px;padding:24px 64px 20px}
+  .q-npc-avatar{width:80px;height:80px;font-size:40px}
+  .q-stem{font-size:20px}
+  .opt-btn{padding:24px 20px}
+  .opt-btn .opt-emoji{font-size:42px}
+  .opt-btn .opt-text{font-size:16px}
+  .nodes-container{gap:36px}
+  .node-circle{width:88px;height:88px;font-size:34px}
+  .node-wrapper.boss .node-circle{width:100px;height:100px;font-size:40px}
+  .node-label{font-size:15px;max-width:110px}
+  .shop-grid{grid-template-columns:repeat(5,1fr);gap:16px;padding:0 48px 48px}
+}
+</style>
+<script>
+// 错误兜底：把 onerror / unhandledrejection 写到 console + sendBeacon
+(function(){
+  try{
+    window.addEventListener('error', function(e){
+      try{ if(navigator.sendBeacon) navigator.sendBeacon('/xes-log', new Blob([JSON.stringify({page:'quiz-game',ts:Date.now(),msg:(e&&e.message)||'error',ua:(navigator.userAgent||'').slice(0,200)})],{type:'application/json'})); }catch(_){}
+    }, true);
+    window.addEventListener('unhandledrejection', function(e){
+      try{ var r=e&&e.reason; if(navigator.sendBeacon) navigator.sendBeacon('/xes-log', new Blob([JSON.stringify({page:'quiz-game',ts:Date.now(),msg:(r&&r.message)||String(r),ua:(navigator.userAgent||'').slice(0,200)})],{type:'application/json'})); }catch(_){}
+    });
+  }catch(_){}
+})();
+// 外部题库预加载(按书目动态引入，同步写入确保在主脚本前加载)
+(function(){
+  // 白名单：与 quiz-data-*.js 实际存在的文件保持同步，未知 book 自动回落 xiyou
+  var WHITELIST = ['xiyou','shuihu','sanguo','honglou','andersen','ailisi','dadi','daocaoren','datouerzi','eluosi','feizhou','gelin','huichen','jierjia','kleilov','lafengdan','lubinxun','meitounao','minjian','oulu','qier','qisehua','renlei','shanhaijing','shenbi','shenhua','shiwan','tangmu','tongnian','tongyao_xia','waitou','xiangfei','xila','yiqi','yisuo','yuanwang','yulai','yuyan','aidejiaoyu'];
+  var raw = (new URLSearchParams(window.location.search).get('book') || 'xiyou').trim();
+  // 仅允许字母数字下划线，防注入
+  if(!/^[a-z0-9_]+$/i.test(raw) || WHITELIST.indexOf(raw) < 0){
+    try{ console.warn('[quiz-game] unknown book='+raw+', fallback xiyou'); }catch(_){}
+    window.__quizBookFallback = raw;
+    raw = 'xiyou';
+  }
+  window.__quizBook = raw;
+  document.write('<scr'+'ipt src="quiz-data-' + raw + '.js" onerror="window.__quizDataMissing=true"><\/scr'+'ipt>');
+})();
+</script>
+</head>
+<body>
+<div id="root">
+  <div id="map-view"></div>
+  <div id="quiz-view" class="hidden"></div>
+  <div id="result-view" class="hidden"></div>
+  <div id="shop-view" class="hidden"></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="feedback-screen" id="feedback"></div>
+<script>
+// ================================================================
+// 阅读闯关测评 V5.0 — 多书目RPG游戏化互动答题
+// 中国青少年阅读素养框架(二阶·5梯)
+// 支持：西游记/水浒传/三国演义/红楼梦
+// ================================================================
+
+// ===== URL参数解析 =====
+const BOOK_ID = (function(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get('book') || 'xiyou';
+})();
+
+// ===== 书目配置 =====
+// 横版图片路径（≥1024px时使用）
+const LANDSCAPE_ASSETS = {
+  xiyou: {
+    bgImage: 'assets/scenes/landscape/xiyou-bg.jpg',
+    sceneBg: ['assets/scenes/landscape/scene0-huaguoshan.jpg','assets/scenes/landscape/scene1-dragonpalace.jpg','assets/scenes/landscape/scene2-tiangong.jpg','assets/scenes/landscape/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/landscape/boss3-danao.jpg',12:'assets/scenes/landscape/boss12-zhenjing.jpg'}
+  },
+  shuihu: {
+    bgImage: 'assets/scenes/xiyou-bg.jpg', // v11 fallback：横屏专属图缺失，复用主图
+    sceneBg: ['assets/scenes/landscape/scene0-huaguoshan.jpg','assets/scenes/landscape/scene1-dragonpalace.jpg','assets/scenes/landscape/scene2-tiangong.jpg','assets/scenes/landscape/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/landscape/boss3-danao.jpg',12:'assets/scenes/landscape/boss12-zhenjing.jpg'}
+  },
+  sanguo: {
+    bgImage: 'assets/scenes/xiyou-bg.jpg', // v11 fallback：横屏专属图缺失，复用主图
+    sceneBg: ['assets/scenes/landscape/scene0-huaguoshan.jpg','assets/scenes/landscape/scene1-dragonpalace.jpg','assets/scenes/landscape/scene2-tiangong.jpg','assets/scenes/landscape/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/landscape/boss3-danao.jpg',12:'assets/scenes/landscape/boss12-zhenjing.jpg'}
+  },
+  honglou: {
+    bgImage: 'assets/scenes/xiyou-bg.jpg', // v11 fallback：横屏专属图缺失，复用主图
+    sceneBg: ['assets/scenes/landscape/scene0-huaguoshan.jpg','assets/scenes/landscape/scene1-dragonpalace.jpg','assets/scenes/landscape/scene2-tiangong.jpg','assets/scenes/landscape/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/landscape/boss3-danao.jpg',12:'assets/scenes/landscape/boss12-zhenjing.jpg'}
+  },
+  shenhua: {
+    bgImage: 'assets/scenes/xiyou-bg.jpg', // v12 fallback：神话专属图待出，先复用主图
+    sceneBg: ['assets/scenes/landscape/scene0-huaguoshan.jpg','assets/scenes/landscape/scene1-dragonpalace.jpg','assets/scenes/landscape/scene2-tiangong.jpg','assets/scenes/landscape/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/landscape/boss3-danao.jpg',12:'assets/scenes/landscape/boss12-zhenjing.jpg'}
+  }
+};
+
+const BOOK_CONFIG = {
+  xiyou: {
+    title: '西游记',
+    subtitle: '阅读大冒险',
+    bgImage: 'assets/scenes/xiyou-bg.jpg',
+    storageKey: 'xiyou_v3',
+    themeColors: ['#FF6B35','#FFD700'],
+    scenes: [
+      {name:'花果山',colors:['#1a0a2e','#2d1154','#4c1d95'],emojis:['🌸','🍑','🌿','✨','🐒','☁️']},
+      {name:'东海龙宫',colors:['#0a1628','#0d3056','#1a5276'],emojis:['🐟','💎','🫧','🌊','🐚','⭐']},
+      {name:'天宫',colors:['#1a0a2e','#2e1065','#581c87'],emojis:['☁️','⭐','🌙','✨','🏯','🎆']},
+      {name:'西行路',colors:['#1a1206','#3d2b0a','#6b4c11'],emojis:['🏔️','🌅','🐴','🍂','🌾','⛩️']}
+    ],
+    sceneBg: ['assets/scenes/scene0-huaguoshan.jpg','assets/scenes/scene1-dragonpalace.jpg','assets/scenes/scene2-tiangong.jpg','assets/scenes/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/boss3-danao.jpg',12:'assets/scenes/boss12-zhenjing.jpg'},
+    npcAvatar: {'知识':'🐵','理解':'📖','评鉴':'⚖️','创意':'🎨','价值':'🌟'},
+    npcName: {'知识':'悟空师傅','理解':'唐僧老师','评鉴':'观音菩萨','创意':'太白金星','价值':'如来佛祖'},
+    levels: [
+      {id:1,name:'石猴出世',scene:0,type:'normal',icon:'🐵'},
+      {id:2,name:'拜师学艺',scene:0,type:'normal',icon:'📖'},
+      {id:3,name:'大闹天宫',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'龙宫借宝',scene:1,type:'normal',icon:'🔱'},
+      {id:5,name:'五行山下',scene:1,type:'normal',icon:'⛰️'},
+      {id:6,name:'师徒结缘',scene:2,type:'boss',icon:'🤝'},
+      {id:7,name:'三打白骨精',scene:2,type:'normal',icon:'💀'},
+      {id:8,name:'火焰山',scene:2,type:'normal',icon:'🔥'},
+      {id:9,name:'女儿国',scene:3,type:'normal',icon:'👸'},
+      {id:10,name:'真假猴王',scene:3,type:'normal',icon:'🎭'},
+      {id:11,name:'通天河',scene:3,type:'normal',icon:'🌊'},
+      {id:12,name:'取得真经',scene:3,type:'boss',icon:'📜'}
+    ],
+    shop: [
+      {id:'frame_gold',name:'紧箍头像框',icon:'⛓️',desc:'唐僧也想要的',price:200,hot:true},
+      {id:'title_sage',name:'齐天大圣',icon:'🐵',desc:'花果山认证称号',price:300},
+      {id:'badge_brain',name:'火眼金睛',icon:'🔥',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_cloud',name:'筋斗云坐骑',icon:'☁️',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_buddha',name:'斗战胜佛',icon:'🙏',desc:'西天最高称号',price:1000},
+      {id:'frame_rainbow',name:'七彩祥云框',icon:'🌈',desc:'紫霞同款',price:250}
+    ]
+  },
+  shuihu: {
+    title: '水浒传',
+    subtitle: '好汉闯江湖',
+    bgImage: 'assets/scenes/xiyou-bg.jpg',
+    storageKey: 'shuihu_v1',
+    themeColors: ['#DC2626','#F97316'],
+    scenes: [
+      {name:'梁山泊',colors:['#1a0a0a','#4c1d1d','#7c2d12'],emojis:['⚔️','🏔️','🍺','🔥','🐎','⭐']},
+      {name:'东京汴梁',colors:['#1a1206','#3d2b0a','#6b4c11'],emojis:['🏯','🎪','🪙','📜','🎭','🏮']},
+      {name:'江湖路',colors:['#0a1628','#1a3a5c','#2563eb'],emojis:['🌊','⛵','🌙','🗡️','🍃','🦅']},
+      {name:'忠义堂',colors:['#1a0a2e','#581c87','#7c3aed'],emojis:['🚩','🤝','📖','⚡','🏹','🎯']}
+    ],
+    sceneBg: ['assets/scenes/scene0-huaguoshan.jpg','assets/scenes/scene1-dragonpalace.jpg','assets/scenes/scene2-tiangong.jpg','assets/scenes/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/boss3-danao.jpg',12:'assets/scenes/boss12-zhenjing.jpg'},
+    npcAvatar: {'知识':'⚔️','理解':'📖','评鉴':'⚖️','创意':'🎨','价值':'🌟'},
+    npcName: {'知识':'武松教头','理解':'吴用军师','评鉴':'包公大人','创意':'公孙胜','价值':'鲁智深'},
+    levels: [
+      {id:1,name:'好汉出世',scene:0,type:'normal',icon:'⚔️'},
+      {id:2,name:'逼上梁山',scene:0,type:'normal',icon:'🏔️'},
+      {id:3,name:'景阳冈',scene:0,type:'boss',icon:'🐯'},
+      {id:4,name:'江湖义气',scene:1,type:'normal',icon:'🤝'},
+      {id:5,name:'智取生辰纲',scene:1,type:'normal',icon:'💰'},
+      {id:6,name:'忠义聚首',scene:2,type:'boss',icon:'🚩'},
+      {id:7,name:'黑旋风',scene:2,type:'normal',icon:'⚡'},
+      {id:8,name:'水浒英雄',scene:2,type:'normal',icon:'🗡️'},
+      {id:9,name:'替天行道',scene:3,type:'boss',icon:'⚖️'},
+      {id:10,name:'梁山风云',scene:3,type:'normal',icon:'🌊'},
+      {id:11,name:'忠义两难',scene:3,type:'normal',icon:'📜'},
+      {id:12,name:'英雄末路',scene:3,type:'boss',icon:'🏁'}
+    ],
+    shop: [
+      {id:'frame_tiger',name:'打虎英雄框',icon:'🐯',desc:'景阳冈认证',price:200,hot:true},
+      {id:'title_hero',name:'梁山好汉',icon:'⚔️',desc:'108将认证称号',price:300},
+      {id:'badge_wisdom',name:'智多星',icon:'💡',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_horse',name:'赤兔马坐骑',icon:'🐎',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_king',name:'替天行道',icon:'🚩',desc:'梁山最高称号',price:1000},
+      {id:'frame_water',name:'水泊头像框',icon:'🌊',desc:'波涛翻涌',price:250}
+    ]
+  },
+  sanguo: {
+    title: '三国演义',
+    subtitle: '逐鹿天下',
+    bgImage: 'assets/scenes/xiyou-bg.jpg',
+    storageKey: 'sanguo_v1',
+    themeColors: ['#1D4ED8','#7C3AED'],
+    scenes: [
+      {name:'桃园',colors:['#1a2e0a','#2d5414','#166534'],emojis:['🌸','⚔️','🍑','🤝','🏯','🎋']},
+      {name:'赤壁',colors:['#4c0a0a','#7c1d1d','#991b1b'],emojis:['🔥','⛵','💨','🌊','⚡','🎯']},
+      {name:'蜀汉',colors:['#1a0a2e','#3b0764','#581c87'],emojis:['🐉','📜','⚔️','🏔️','☁️','🌟']},
+      {name:'天下大势',colors:['#1a1206','#422006','#78350f'],emojis:['🗡️','👑','🏰','🎪','📖','⭐']}
+    ],
+    sceneBg: ['assets/scenes/scene0-huaguoshan.jpg','assets/scenes/scene1-dragonpalace.jpg','assets/scenes/scene2-tiangong.jpg','assets/scenes/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/boss3-danao.jpg',12:'assets/scenes/boss12-zhenjing.jpg'},
+    npcAvatar: {'知识':'🐉','理解':'📖','评鉴':'⚖️','创意':'🎨','价值':'🌟'},
+    npcName: {'知识':'诸葛先生','理解':'庞统军师','评鉴':'曹操丞相','创意':'周瑜都督','价值':'关云长'},
+    levels: [
+      {id:1,name:'桃园结义',scene:0,type:'normal',icon:'🌸'},
+      {id:2,name:'三顾茅庐',scene:0,type:'normal',icon:'🏡'},
+      {id:3,name:'赤壁之战',scene:1,type:'boss',icon:'🔥'},
+      {id:4,name:'过五关斩六将',scene:1,type:'normal',icon:'⚔️'},
+      {id:5,name:'三英战吕布',scene:1,type:'normal',icon:'🗡️'},
+      {id:6,name:'空城计',scene:2,type:'boss',icon:'🎵'},
+      {id:7,name:'火烧连营',scene:2,type:'normal',icon:'🔥'},
+      {id:8,name:'七擒孟获',scene:2,type:'normal',icon:'🐘'},
+      {id:9,name:'走麦城',scene:3,type:'boss',icon:'😢'},
+      {id:10,name:'出师表',scene:3,type:'normal',icon:'📜'},
+      {id:11,name:'司马篡权',scene:3,type:'normal',icon:'👑'},
+      {id:12,name:'三分归一',scene:3,type:'boss',icon:'🏁'}
+    ],
+    shop: [
+      {id:'frame_dragon',name:'卧龙头像框',icon:'🐉',desc:'南阳认证',price:200,hot:true},
+      {id:'title_general',name:'五虎上将',icon:'⚔️',desc:'蜀汉最高武将',price:300},
+      {id:'badge_fan',name:'羽扇纶巾',icon:'🪶',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_boat',name:'赤壁战船',icon:'⛵',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_emperor',name:'一统天下',icon:'👑',desc:'最终称号',price:1000},
+      {id:'frame_fire',name:'火攻头像框',icon:'🔥',desc:'赤壁烈焰',price:250}
+    ]
+  },
+  honglou: {
+    title: '红楼梦',
+    subtitle: '大观园奇遇',
+    bgImage: 'assets/scenes/xiyou-bg.jpg',
+    storageKey: 'honglou_v1',
+    themeColors: ['#DB2777','#EC4899'],
+    scenes: [
+      {name:'贾府',colors:['#2e0a1a','#5c1a33','#9d174d'],emojis:['🏮','🎪','💝','🌸','👑','✨']},
+      {name:'大观园',colors:['#0a2e1a','#145c33','#16a34a'],emojis:['🌺','🦋','📖','🎨','🌙','💐']},
+      {name:'诗社',colors:['#1a0a2e','#3b0764','#7c3aed'],emojis:['✍️','🌸','📜','🎭','🍃','⭐']},
+      {name:'红楼梦境',colors:['#1a1206','#3d1606','#7c2d12'],emojis:['💎','🪞','🌙','🔮','📿','🌟']}
+    ],
+    sceneBg: ['assets/scenes/scene0-huaguoshan.jpg','assets/scenes/scene1-dragonpalace.jpg','assets/scenes/scene2-tiangong.jpg','assets/scenes/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/boss3-danao.jpg',12:'assets/scenes/boss12-zhenjing.jpg'},
+    npcAvatar: {'知识':'📖','理解':'🧠','评鉴':'⚖️','创意':'🎨','价值':'🌟'},
+    npcName: {'知识':'贾宝玉','理解':'林黛玉','评鉴':'薛宝钗','创意':'探春姑娘','价值':'贾母老太'},
+    levels: [
+      {id:1,name:'黛玉进府',scene:0,type:'normal',icon:'👧'},
+      {id:2,name:'刘姥姥来访',scene:0,type:'normal',icon:'👵'},
+      {id:3,name:'元妃省亲',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'共读西厢',scene:1,type:'normal',icon:'📖'},
+      {id:5,name:'海棠诗社',scene:1,type:'normal',icon:'✍️'},
+      {id:6,name:'抄检风波',scene:2,type:'boss',icon:'⚡'},
+      {id:7,name:'黛玉葬花',scene:2,type:'normal',icon:'🌸'},
+      {id:8,name:'宝钗扑蝶',scene:2,type:'normal',icon:'🦋'},
+      {id:9,name:'贾府风波',scene:3,type:'boss',icon:'💔'},
+      {id:10,name:'香菱学诗',scene:3,type:'normal',icon:'📝'},
+      {id:11,name:'晴雯补裘',scene:3,type:'normal',icon:'🧵'},
+      {id:12,name:'红楼梦醒',scene:3,type:'boss',icon:'🌙'}
+    ],
+    shop: [
+      {id:'frame_jade',name:'通灵宝玉框',icon:'💎',desc:'含玉而生',price:200,hot:true},
+      {id:'title_poet',name:'诗社魁首',icon:'✍️',desc:'大观园认证',price:300},
+      {id:'badge_flower',name:'葬花吟',icon:'🌸',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_garden',name:'大观园游',icon:'🏡',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_dream',name:'太虚幻境',icon:'🌙',desc:'最终称号',price:1000},
+      {id:'frame_butterfly',name:'蝶恋花框',icon:'🦋',desc:'翩翩起舞',price:250}
+    ]
+  },
+  shenhua: {
+    title: '中国神话故事',
+    subtitle: '走进民族想象',
+    bgImage: 'assets/scenes/xiyou-bg.jpg',
+    storageKey: 'shenhua_v1',
+    themeColors: ['#7C3AED','#F59E0B'],
+    scenes: [
+      {name:'鸿蒙开辟',colors:['#0a0a1e','#1e1b4b','#3730a3'],emojis:['🌌','⚡','🪐','✨','🌑','☀️']},
+      {name:'山河风物',colors:['#0a2e1a','#14532d','#166534'],emojis:['🏔️','🌊','🌪️','🌳','🐢','☁️']},
+      {name:'日月星辰',colors:['#1a0a2e','#581c87','#a855f7'],emojis:['🌞','🌙','⭐','🏹','🐇','🌠']},
+      {name:'人间百业',colors:['#1a1206','#78350f','#d97706'],emojis:['🌾','🔥','🌿','💧','🏘️','🛠️']}
+    ],
+    sceneBg: ['assets/scenes/scene0-huaguoshan.jpg','assets/scenes/scene1-dragonpalace.jpg','assets/scenes/scene2-tiangong.jpg','assets/scenes/scene3-westroad.jpg'],
+    bossBg: {3:'assets/scenes/boss3-danao.jpg',12:'assets/scenes/boss12-zhenjing.jpg'},
+    npcAvatar: {'知识':'🪐','理解':'📖','评鉴':'⚖️','创意':'🎨','价值':'🌟'},
+    npcName: {'知识':'盘古先生','理解':'女娲娘娘','评鉴':'神农氏','创意':'后羿大神','价值':'大禹王'},
+    levels: [
+      {id:1,name:'盘古开天',scene:0,type:'normal',icon:'🪓'},
+      {id:2,name:'女娲造人',scene:0,type:'normal',icon:'🧱'},
+      {id:3,name:'女娲补天',scene:0,type:'boss',icon:'🌈'},
+      {id:4,name:'精卫填海',scene:1,type:'normal',icon:'🐦'},
+      {id:5,name:'夸父逐日',scene:1,type:'normal',icon:'🏃'},
+      {id:6,name:'刑天舞戚',scene:1,type:'boss',icon:'⚔️'},
+      {id:7,name:'后羿射日',scene:2,type:'normal',icon:'🏹'},
+      {id:8,name:'嫦娥奔月',scene:2,type:'normal',icon:'🌙'},
+      {id:9,name:'共工撞山',scene:2,type:'boss',icon:'💥'},
+      {id:10,name:'神农尝草',scene:3,type:'normal',icon:'🌿'},
+      {id:11,name:'燧人取火',scene:3,type:'normal',icon:'🔥'},
+      {id:12,name:'大禹治水',scene:3,type:'boss',icon:'💧'}
+    ],
+    shop: [
+      {id:'frame_pangu',name:'盘古巨斧框',icon:'🪓',desc:'开天辟地认证',price:200,hot:true},
+      {id:'title_jingwei',name:'精卫之志',icon:'🐦',desc:'明知不可为而为之',price:300},
+      {id:'badge_yi',name:'后羿神弓',icon:'🏹',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_moon',name:'嫦娥月宫',icon:'🌙',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_dayu',name:'治水大禹',icon:'💧',desc:'最高荣誉称号',price:1000},
+      {id:'frame_kuafu',name:'夸父桃林框',icon:'🍑',desc:'邓林同款',price:250}
+    ]
+  },
+  andersen: {
+    title: '安徒生童话',
+    subtitle: '童话里也有眼泪',
+    bgImage: '',
+    storageKey: 'andersen_v1',
+    themeColors: ['#3B82F6','#F472B6'],
+    scenes: [
+      {name:'除夕街角',colors:['#0a1530','#1e3a8a','#3b82f6'],emojis:['❄️','🕯️','🔥','🎄','✨','🌟']},
+      {name:'养鸭场',colors:['#0a2e1a','#166534','#84cc16'],emojis:['🦆','🥚','🌾','🪶','🌳','🐦']},
+      {name:'皇宫游行',colors:['#1a0a2e','#7c3aed','#fbbf24'],emojis:['👑','🧵','🪡','🎺','🎩','💎']},
+      {name:'夜空与海',colors:['#0a0a1e','#1e1b4b','#312e81'],emojis:['🌙','🦢','🌊','⭐','🧚','🏰']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: {3:'',6:'',9:'',12:''},
+    npcAvatar: {'知识':'🕯️','理解':'🦆','评鉴':'👑','创意':'🦢','价值':'⭐'},
+    npcName: {'知识':'卖火柴的小女孩','理解':'丑小鸭','评鉴':'说真话的孩子','创意':'夜莺','价值':'安徒生爷爷'},
+    levels: [
+      {id:1,name:'走进安徒生',scene:0,type:'normal',icon:'📚'},
+      {id:2,name:'卖火柴的小女孩',scene:0,type:'normal',icon:'🕯️'},
+      {id:3,name:'海的女儿',scene:0,type:'boss',icon:'🌊'},
+      {id:4,name:'丑小鸭',scene:1,type:'normal',icon:'🦆'},
+      {id:5,name:'拇指姑娘',scene:1,type:'normal',icon:'🌷'},
+      {id:6,name:'野天鹅',scene:1,type:'boss',icon:'🦢'},
+      {id:7,name:'皇帝的新装',scene:2,type:'normal',icon:'👑'},
+      {id:8,name:'夜莺',scene:2,type:'normal',icon:'🐦'},
+      {id:9,name:'豌豆公主',scene:2,type:'boss',icon:'👸'},
+      {id:10,name:'坚定的锡兵',scene:3,type:'normal',icon:'🪖'},
+      {id:11,name:'打火匣',scene:3,type:'normal',icon:'🔥'},
+      {id:12,name:'给安徒生的信',scene:3,type:'boss',icon:'✉️'}
+    ],
+    shop: [
+      {id:'frame_match',name:'火柴光晕框',icon:'🕯️',desc:'温暖的幻觉认证',price:200,hot:true},
+      {id:'title_swan',name:'丑小鸭之心',icon:'🦢',desc:'你不是错的，只是没到时候',price:300},
+      {id:'badge_truth',name:'真话徽章',icon:'👑',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_moon',name:'夜莺月夜',icon:'🌙',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_andersen',name:'童话信使',icon:'✉️',desc:'最高荣誉称号',price:1000},
+      {id:'frame_thumbelina',name:'拇指姑娘花瓣框',icon:'🌷',desc:'最小英雄同款',price:250}
+    ]
+  },
+  minjian: {
+    title: '中国民间故事',
+    subtitle: '人民写的书，人民传的事',
+    bgImage: '',
+    storageKey: 'minjian_v1',
+    themeColors: ['#dc2626','#fbbf24'],
+    scenes: [
+      {name:'乡野田间',colors:['#1a3a0a','#365314','#84cc16'],emojis:['🌾','🐂','🌳','🏡','🌻','🦗']},
+      {name:'天河两岸',colors:['#0a1230','#1e3a8a','#7dd3fc'],emojis:['🌌','🌉','🪶','✨','🌙','💫']},
+      {name:'长城边塞',colors:['#3a2010','#78350f','#d97706'],emojis:['🧱','⛰️','🏹','💧','🪨','🌫️']},
+      {name:'江南水乡',colors:['#0a2e2a','#0f766e','#5eead4'],emojis:['🦋','🌸','⛵','🏯','🌊','🪷']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: {3:'',6:'',9:'',12:''},
+    npcAvatar: {'知识':'🐂','理解':'🌉','评鉴':'🦋','创意':'🪶','价值':'🌌'},
+    npcName: {'知识':'老牛','理解':'喜鹊','评鉴':'蝴蝶','创意':'织女','价值':'孟姜女'},
+    levels: [
+      {id:1,name:'走进民间故事',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'牛郎与老牛',scene:0,type:'normal',icon:'🐂'},
+      {id:3,name:'天河相隔',scene:1,type:'boss',icon:'🌌'},
+      {id:4,name:'孟姜女寻夫',scene:2,type:'normal',icon:'👰'},
+      {id:5,name:'哭倒长城',scene:2,type:'normal',icon:'🧱'},
+      {id:6,name:'孟姜女精神',scene:2,type:'boss',icon:'💧'},
+      {id:7,name:'白蛇与许仙',scene:3,type:'normal',icon:'🐍'},
+      {id:8,name:'雷峰塔下',scene:3,type:'normal',icon:'🏯'},
+      {id:9,name:'白蛇是谁',scene:3,type:'boss',icon:'⚖️'},
+      {id:10,name:'梁祝同窗',scene:3,type:'normal',icon:'📚'},
+      {id:11,name:'化蝶',scene:3,type:'normal',icon:'🦋'},
+      {id:12,name:'传说之承',scene:3,type:'boss',icon:'🪶'}
+    ],
+    shop: [
+      {id:'frame_milkyway',name:'天河星辉框',icon:'🌌',desc:'银河照亮的认证',price:200,hot:true},
+      {id:'title_butterfly',name:'化蝶之名',icon:'🦋',desc:'爱情至上的徽章',price:300},
+      {id:'badge_magpie',name:'喜鹊徽章',icon:'🪶',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_lantern',name:'江南灯笼',icon:'🏮',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_keeper',name:'传说守护者',icon:'📜',desc:'最高荣誉称号',price:1000},
+      {id:'frame_ox',name:'老牛同行框',icon:'🐂',desc:'牛郎织女见证',price:250}
+    ]
+  },
+  tongnian: {
+    title: '童年',
+    subtitle: '一所看见人的学校',
+    bgImage: '',
+    storageKey: 'tongnian_v1',
+    themeColors: ['#7c2d12','#fbbf24'],
+    scenes: [
+      {name:'外祖父小院',colors:['#1a1108','#451a03','#92400e'],emojis:['🏚️','🪵','🕯️','📜','🪞','🌾']},
+      {name:'染坊与街巷',colors:['#0f172a','#1e293b','#475569'],emojis:['🪣','🧵','🌫️','🚪','📿','🐎']},
+      {name:'伏尔加河岸',colors:['#0a1f2e','#0e7490','#67e8f9'],emojis:['🌊','⛵','🌫️','☁️','🪶','🐟']},
+      {name:'走向人间',colors:['#1c1917','#44403c','#fbbf24'],emojis:['🛤️','🌅','🎒','📖','🚶','🌫️']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: {3:'',6:'',9:'',12:''},
+    npcAvatar: {'知识':'📜','理解':'🪞','评鉴':'🪶','创意':'📖','价值':'🌅'},
+    npcName: {'知识':'外祖母','理解':'阿廖沙','评鉴':'好事情','创意':'茨冈','价值':'高尔基'},
+    levels: [
+      {id:1,name:'走进高尔基',scene:0,type:'normal',icon:'📚'},
+      {id:2,name:'父亲死了',scene:0,type:'normal',icon:'🪦'},
+      {id:3,name:'外祖父打人',scene:0,type:'boss',icon:'🪵'},
+      {id:4,name:'外祖母讲故事',scene:1,type:'normal',icon:'🕯️'},
+      {id:5,name:'染坊里的茨冈',scene:1,type:'normal',icon:'🧵'},
+      {id:6,name:'茨冈之死',scene:1,type:'boss',icon:'⚰️'},
+      {id:7,name:'好事情登场',scene:2,type:'normal',icon:'🔬'},
+      {id:8,name:'母亲再嫁',scene:2,type:'normal',icon:'💍'},
+      {id:9,name:'母亲离去',scene:2,type:'boss',icon:'🥀'},
+      {id:10,name:'外祖父破产',scene:3,type:'normal',icon:'💸'},
+      {id:11,name:'独自启程',scene:3,type:'normal',icon:'🎒'},
+      {id:12,name:'走向人间',scene:3,type:'boss',icon:'🌅'}
+    ],
+    shop: [
+      {id:'frame_lamp',name:'外祖母灯笼框',icon:'🕯️',desc:'黑暗里的灯',price:200,hot:true},
+      {id:'title_alyosha',name:'阿廖沙之名',icon:'👦',desc:'独自走向人间的少年',price:300},
+      {id:'badge_eye',name:'看见徽章',icon:'👁️',desc:'答案高亮提示×1',price:150,new:true},
+      {id:'skin_volga',name:'伏尔加河岸',icon:'🌊',desc:'地图特效装饰',price:500,hot:true},
+      {id:'title_gorky',name:'告别童年者',icon:'📖',desc:'最高荣誉称号',price:1000},
+      {id:'frame_tsigan',name:'茨冈之笑框',icon:'🪶',desc:'纪念明亮的伙伴',price:250}
+    ]
+  },
+  tongyao_xia: {
+    title: '读读童谣和儿歌',
+    subtitle: '童谣大冒险',
+    bgImage: '',
+    storageKey: 'tongyao_xia_v1',
+    themeColors: ['#ffd6a5','#ffadad'],
+    scenes: [
+      {name:'摇篮里',colors:['#ffe1e1','#ffc4c4','#ffadad'],emojis:['🌙','⭐','🛏','🍼','👶','💤']},
+      {name:'院子里',colors:['#fff7c2','#ffe999','#ffd166'],emojis:['🦆','🐭','🐱','🐰','🌻','🪁']},
+      {name:'拍手广场',colors:['#caffbf','#9bf6ff','#a0c4ff'],emojis:['👏','✋','🤝','🎵','🎶','🎈']},
+      {name:'童谣大舞台',colors:['#bdb2ff','#ffc6ff','#ffd6a5'],emojis:['🎤','🎭','🌟','🎉','🥁','📣']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📖','理解':'🌷','评鉴':'🎀','创意':'🎨','价值':'💖' },
+    npcName:   { '知识':'童谣爷爷','理解':'摇篮姐姐','评鉴':'拍手老师','创意':'仿编小猫','价值':'传家奶奶' },
+    levels: [
+      {id:1,name:'童谣是什么',scene:0,type:'normal',icon:'🎵'},
+      {id:2,name:'摇摇船',scene:0,type:'normal',icon:'🛶'},
+      {id:3,name:'押韵小高手',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'数鸭子',scene:1,type:'normal',icon:'🦆'},
+      {id:5,name:'小老鼠上灯台',scene:1,type:'normal',icon:'🐭'},
+      {id:6,name:'拍手歌大闯关',scene:2,type:'boss',icon:'👑'},
+      {id:7,name:'小白兔与小动物',scene:1,type:'normal',icon:'🐰'},
+      {id:8,name:'妈妈的爱',scene:0,type:'normal',icon:'💖'},
+      {id:9,name:'仿编小诗人',scene:2,type:'boss',icon:'👑'},
+      {id:10,name:'生活里的童谣',scene:2,type:'normal',icon:'🏫'},
+      {id:11,name:'班级童谣会',scene:3,type:'normal',icon:'🎤'},
+      {id:12,name:'童谣传家',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_yaolan', name:'摇篮相框', icon:'🛏', desc:'温柔的童谣相框', price:200, hot:true},
+      {id:'title_xiaogeshou', name:'小歌手称号', icon:'🎤', desc:'唱出最好听的童谣', price:300},
+      {id:'badge_paishou', name:'拍手提示卡', icon:'👏', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_yueliangchuan', name:'月亮船坐骑', icon:'🌙', desc:'摇啊摇地图特效', price:500, hot:true},
+      {id:'title_chuanjia', name:'童谣传家人', icon:'🌟', desc:'最高荣誉称号', price:1000},
+      {id:'frame_paishou', name:'拍手副框', icon:'✋', desc:'好玩的对拍相框', price:250}
+    ]
+  },
+  meitounao: {
+    title: '没头脑和不高兴',
+    subtitle: '两个外号的奇遇',
+    bgImage: '',
+    storageKey: 'meitounao_v1',
+    themeColors: ['#a0c4ff','#ffadad'],
+    scenes: [
+      {name:'校园里',colors:['#caffbf','#9bf6ff','#a0c4ff'],emojis:['📚','🎒','✏️','🏫','🧒','👧']},
+      {name:'225 层下',colors:['#fdffb6','#ffd6a5','#ffadad'],emojis:['🏢','🪜','😩','🚧','🔧','📐']},
+      {name:'剧场里',colors:['#ffc6ff','#bdb2ff','#a0c4ff'],emojis:['🎭','🐯','🥢','🎬','🪞','🎤']},
+      {name:'梦醒之处',colors:['#caffbf','#fdffb6','#ffc6ff'],emojis:['🌙','💭','🔔','🌅','🪞','✨']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📖','理解':'🧠','评鉴':'⚖️','创意':'🎨','价值':'🪞' },
+    npcName:   { '知识':'任爷爷','理解':'糊涂博士','评鉴':'武松大哥','创意':'梦境精灵','价值':'镜子奶奶' },
+    levels: [
+      {id:1,name:'初识两位小朋友',scene:0,type:'normal',icon:'👬'},
+      {id:2,name:'没头脑日常',scene:0,type:'normal',icon:'🤪'},
+      {id:3,name:'225 层大事件',scene:1,type:'boss',icon:'👑'},
+      {id:4,name:'不高兴日常',scene:0,type:'normal',icon:'😤'},
+      {id:5,name:'武松与老虎',scene:2,type:'normal',icon:'🐯'},
+      {id:6,name:'两个角色的镜子',scene:2,type:'boss',icon:'👑'},
+      {id:7,name:'幽默的笔法',scene:1,type:'normal',icon:'😄'},
+      {id:8,name:'梦的设计',scene:3,type:'normal',icon:'💭'},
+      {id:9,name:'我决定改',scene:3,type:'boss',icon:'👑'},
+      {id:10,name:'家庭与同伴对照',scene:0,type:'normal',icon:'🏠'},
+      {id:11,name:'武松改编小剧场',scene:2,type:'normal',icon:'🎬'},
+      {id:12,name:'童话的礼物',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_naodai', name:'糊涂相框', icon:'🤪', desc:'让头像有点呆萌', price:200, hot:true},
+      {id:'title_xiaomeitou', name:'小没头脑称号', icon:'🎒', desc:'诚实承认会粗心', price:300},
+      {id:'badge_tixing', name:'提醒小铃铛', icon:'🔔', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_yunti', name:'225 层云梯', icon:'🪜', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_zhuibu', name:'追梦改正人', icon:'🌟', desc:'最高荣誉称号', price:1000},
+      {id:'frame_jingzi', name:'镜子副框', icon:'🪞', desc:'每天照见自己', price:250}
+    ]
+  },
+  yuanwang: {
+    title: '愿望的实现',
+    subtitle: '换身一夜',
+    bgImage: '',
+    storageKey: 'yuanwang_v1',
+    themeColors: ['#bdb2ff','#a0c4ff'],
+    scenes: [
+      {name:'家里',colors:['#fdffb6','#caffbf','#9bf6ff'],emojis:['🏠','🛋','🍚','📺','👨','👦']},
+      {name:'夜空仙女',colors:['#bdb2ff','#a0c4ff','#9bf6ff'],emojis:['🌙','✨','🧚','💫','🪄','🌟']},
+      {name:'换身校园',colors:['#caffbf','#fdffb6','#ffd6a5'],emojis:['📚','🏫','✏️','🎒','😩','🍬']},
+      {name:'换身职场',colors:['#ffadad','#ffd6a5','#fdffb6'],emojis:['💼','🛒','📞','🔧','😰','📊']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📖','理解':'🧚','评鉴':'🪞','创意':'🎨','价值':'💞' },
+    npcName:   { '知识':'泰戈尔爷爷','理解':'仙女姐姐','评鉴':'换身镜','创意':'梦境精灵','价值':'家的回响' },
+    levels: [
+      {id:1,name:'走近泰戈尔',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'父子日常',scene:0,type:'normal',icon:'👨‍👦'},
+      {id:3,name:'仙女出现',scene:1,type:'boss',icon:'👑'},
+      {id:4,name:'爸爸变小孩·上学',scene:2,type:'normal',icon:'🎒'},
+      {id:5,name:'爸爸变小孩·想吃糖',scene:2,type:'normal',icon:'🍬'},
+      {id:6,name:'父子镜子',scene:1,type:'boss',icon:'👑'},
+      {id:7,name:'儿子变大人·买菜',scene:3,type:'normal',icon:'🛒'},
+      {id:8,name:'儿子变大人·开会',scene:3,type:'normal',icon:'💼'},
+      {id:9,name:'天亮变回来',scene:1,type:'boss',icon:'👑'},
+      {id:10,name:'我也要换位',scene:0,type:'normal',icon:'🪞'},
+      {id:11,name:'感谢与行动',scene:0,type:'normal',icon:'💖'},
+      {id:12,name:'家庭礼物',scene:1,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_xinyuan', name:'许愿相框', icon:'✨', desc:'让头像有星光', price:200, hot:true},
+      {id:'title_huanshen', name:'换身体验家', icon:'🪞', desc:'看见对方的人', price:300},
+      {id:'badge_xianny', name:'仙女小提示', icon:'🧚', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_yueguang', name:'月光坐骑', icon:'🌙', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_jiaohuiren', name:'家的传话人', icon:'💞', desc:'最高荣誉称号', price:1000},
+      {id:'frame_baoyibao', name:'拥抱副框', icon:'🤗', desc:'温暖的相框', price:250}
+    ]
+  },
+  xiangfei: {
+    title: '一只想飞的猫',
+    subtitle: '吹牛历险记',
+    bgImage: '',
+    storageKey: 'xiangfei_v1',
+    themeColors: ['#ffd6a5','#caffbf'],
+    scenes: [
+      {name:'田野上',colors:['#caffbf','#fdffb6','#ffd6a5'],emojis:['🌾','🦋','🐱','☁️','🌳','🌻']},
+      {name:'天空里',colors:['#a0c4ff','#9bf6ff','#caffbf'],emojis:['🐦','🕊','🐝','☁️','🌤','✈️']},
+      {name:'池塘边',colors:['#9bf6ff','#a0c4ff','#bdb2ff'],emojis:['🦆','🐸','🐟','🌊','🪷','💦']},
+      {name:'苹果树下',colors:['#ffadad','#ffd6a5','#fdffb6'],emojis:['🍎','🌳','😳','😮','🪜','🤕']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📖','理解':'🐱','评鉴':'🪞','创意':'🎨','价值':'🍎' },
+    npcName:   { '知识':'陈爷爷','理解':'吹牛猫','评鉴':'围观鸽','创意':'画家燕','价值':'苹果裁判' },
+    levels: [
+      {id:1,name:'走近陈伯吹',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'猫的得意洋洋',scene:0,type:'normal',icon:'😼'},
+      {id:3,name:'第一夸·见鸽子',scene:1,type:'boss',icon:'👑'},
+      {id:4,name:'第二夸·见燕子',scene:1,type:'normal',icon:'🐦'},
+      {id:5,name:'第三夸·见鸭子',scene:2,type:'normal',icon:'🦆'},
+      {id:6,name:'夸口的代价',scene:2,type:'boss',icon:'👑'},
+      {id:7,name:'苹果树围观',scene:3,type:'normal',icon:'🌳'},
+      {id:8,name:'摔下来',scene:3,type:'normal',icon:'💥'},
+      {id:9,name:'承认那一刻',scene:3,type:'boss',icon:'👑'},
+      {id:10,name:'我也吹过',scene:0,type:'normal',icon:'🪞'},
+      {id:11,name:'苹果树小剧场',scene:3,type:'normal',icon:'🎬'},
+      {id:12,name:'吹之前先练',scene:0,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_pingguo', name:'苹果相框', icon:'🍎', desc:'让头像戴一颗苹果', price:200, hot:true},
+      {id:'title_chengrenmao', name:'承认小猫称号', icon:'😼', desc:'敢于承认的人', price:300},
+      {id:'badge_yangguang', name:'透明翅膀', icon:'🪶', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_yangguang', name:'练习坐骑', icon:'🪜', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_zhenfei', name:'真飞家', icon:'🦅', desc:'最高荣誉称号', price:1000},
+      {id:'frame_lianxi', name:'练习小本副框', icon:'📓', desc:'每天练习的相框', price:250}
+    ]
+  },
+  qisehua: {
+    title: '七色花',
+    subtitle: '最后一片花瓣',
+    bgImage: '',
+    storageKey: 'qisehua_v1',
+    themeColors: ['#ffadad','#ffd6a5'],
+    scenes: [
+      {name:'店里街上',colors:['#fdffb6','#caffbf','#ffd6a5'],emojis:['🥖','🐕','🛒','🌳','👧','💐']},
+      {name:'家中花瓶',colors:['#caffbf','#fdffb6','#9bf6ff'],emojis:['🏠','🌷','🌼','🪞','🪀','🧸']},
+      {name:'北极风雪',colors:['#9bf6ff','#a0c4ff','#caffbf'],emojis:['❄️','🐻‍❄️','🌬','⛄','🧊','✨']},
+      {name:'公园长椅',colors:['#caffbf','#fdffb6','#ffd6a5'],emojis:['🌳','🪑','🦋','👦','🌼','💚']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📖','理解':'🌈','评鉴':'🪞','创意':'🎨','价值':'💚' },
+    npcName:   { '知识':'卡塔耶夫爷爷','理解':'七色花','评鉴':'许愿镜','创意':'梦想精灵','价值':'真心花瓣' },
+    levels: [
+      {id:1,name:'走近卡塔耶夫',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'花的来历',scene:0,type:'normal',icon:'🌈'},
+      {id:3,name:'第一二片·浪费',scene:1,type:'boss',icon:'👑'},
+      {id:4,name:'第三片·北极',scene:2,type:'normal',icon:'❄️'},
+      {id:5,name:'第四五六片·打转',scene:1,type:'normal',icon:'🧸'},
+      {id:6,name:'六片用完·空',scene:1,type:'boss',icon:'👑'},
+      {id:7,name:'公园遇维佳',scene:3,type:'normal',icon:'🪑'},
+      {id:8,name:'犹豫的一刻',scene:3,type:'normal',icon:'🤔'},
+      {id:9,name:'最后一片花瓣',scene:3,type:'boss',icon:'👑'},
+      {id:10,name:'我的七色花',scene:0,type:'normal',icon:'🌈'},
+      {id:11,name:'今晚的小花瓣',scene:0,type:'normal',icon:'💚'},
+      {id:12,name:'家庭礼物',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_qicai', name:'七色相框', icon:'🌈', desc:'让头像戴上七色花', price:200, hot:true},
+      {id:'title_zhenxin', name:'真心花瓣称号', icon:'💚', desc:'把别人放进愿望的人', price:300},
+      {id:'badge_xianny', name:'仙女小提示', icon:'🧚', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_huaban', name:'花瓣坐骑', icon:'🌸', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_zhaoliang', name:'照亮别人家', icon:'✨', desc:'最高荣誉称号', price:1000},
+      {id:'frame_yongbao', name:'拥抱副框', icon:'🤗', desc:'温暖的相框', price:250}
+    ]
+  },
+  shenbi: {
+    title: '神笔马良',
+    subtitle: '一支笔两种世界',
+    bgImage: '',
+    storageKey: 'shenbi_v1',
+    themeColors: ['#ffd6a5','#a0c4ff'],
+    scenes: [
+      {name:'山村田野',colors:['#caffbf','#fdffb6','#ffd6a5'],emojis:['🌾','🐃','💧','👴','✏️','📜']},
+      {name:'财主大院',colors:['#ffadad','#fdffb6','#ffc6ff'],emojis:['💰','🏯','🧔','😈','💎','🪙']},
+      {name:'皇宫与海',colors:['#a0c4ff','#bdb2ff','#caffbf'],emojis:['🏯','👑','🌊','⛵','💨','🐟']},
+      {name:'神笔信箱',colors:['#fdffb6','#ffc6ff','#ffd6a5'],emojis:['✏️','📮','✨','🌅','📜','💌']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'📜','理解':'🐃','评鉴':'⚖️','创意':'🎨','价值':'✨' },
+    npcName:   { '知识':'白胡子老人','理解':'老大爷','评鉴':'渔民老张','创意':'马良本人','价值':'神笔精灵' },
+    levels: [
+      {id:1,name:'走进神笔马良',scene:0,type:'normal',icon:'✏️'},
+      {id:2,name:'神笔的第一天',scene:0,type:'normal',icon:'🐃'},
+      {id:3,name:'画给穷人三件事',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'财主出场',scene:1,type:'normal',icon:'🧔'},
+      {id:5,name:'金山变石头',scene:1,type:'normal',icon:'💎'},
+      {id:6,name:'一支笔两种结果',scene:1,type:'boss',icon:'👑'},
+      {id:7,name:'皇帝出场',scene:2,type:'normal',icon:'👑'},
+      {id:8,name:'狂风翻船',scene:2,type:'normal',icon:'🌊'},
+      {id:9,name:'中国童话的味道',scene:2,type:'boss',icon:'👑'},
+      {id:10,name:'马良这个人',scene:3,type:'normal',icon:'🧒'},
+      {id:11,name:'我有神笔',scene:3,type:'normal',icon:'✨'},
+      {id:12,name:'童话信箱',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_shenbi', name:'神笔相框', icon:'✏️', desc:'让头像有支神笔', price:200, hot:true},
+      {id:'title_xiaomaliang', name:'小马良称号', icon:'🧒', desc:'画给身边人的孩子', price:300},
+      {id:'badge_xingxing', name:'闪光小星星', icon:'✨', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_huangniu', name:'大黄牛坐骑', icon:'🐃', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_zhongguotonghua', name:'中国童话守护者', icon:'📜', desc:'最高荣誉称号', price:1000},
+      {id:'frame_yubang', name:'渔网副框', icon:'🎣', desc:'记得给穷人画工具', price:250}
+    ]
+  },
+  datouerzi: {
+    title: '大头儿子和小头爸爸',
+    subtitle: '一家三口的小日常',
+    bgImage: '',
+    storageKey: 'datouerzi_v1',
+    themeColors: ['#ffadad','#a0c4ff'],
+    scenes: [
+      {name:'公寓小家',colors:['#caffbf','#fdffb6','#ffd6a5'],emojis:['🏠','🛋️','🍳','📺','👨','🧒']},
+      {name:'阳台风筝',colors:['#a0c4ff','#bdb2ff','#fdffb6'],emojis:['🪁','☀️','🌤️','🦋','😅','💨']},
+      {name:'夜里小灯',colors:['#bdb2ff','#a0c4ff','#caffbf'],emojis:['🌙','🛏️','💤','💡','🦶','💌']},
+      {name:'家庭信箱',colors:['#ffc6ff','#ffadad','#fdffb6'],emojis:['📮','✏️','📷','🎁','💝','✨']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'👨','理解':'🧒','评鉴':'⚖️','创意':'🎨','价值':'💝' },
+    npcName:   { '知识':'小头爸爸','理解':'大头儿子','评鉴':'围裙妈妈','创意':'郑春华阿姨','价值':'家的味道' },
+    levels: [
+      {id:1,name:'走进一家三口',scene:0,type:'normal',icon:'👨‍👩‍👦'},
+      {id:2,name:'人物登场细节',scene:0,type:'normal',icon:'🧒'},
+      {id:3,name:'风筝跑断腿',scene:1,type:'boss',icon:'👑'},
+      {id:4,name:'爸爸闹笑话集',scene:0,type:'normal',icon:'😄'},
+      {id:5,name:'妈妈也会说爸爸',scene:0,type:'normal',icon:'🤭'},
+      {id:6,name:'儿子半夜盖被',scene:2,type:'boss',icon:'👑'},
+      {id:7,name:'反向照顾发现',scene:2,type:'normal',icon:'💌'},
+      {id:8,name:'平等的爱',scene:0,type:'normal',icon:'💞'},
+      {id:9,name:'城市童话味道',scene:0,type:'boss',icon:'👑'},
+      {id:10,name:'郑春华这个人',scene:3,type:'normal',icon:'✏️'},
+      {id:11,name:'我家三格画',scene:3,type:'normal',icon:'🖼️'},
+      {id:12,name:'家庭信箱',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_xiaojia', name:'小家相框', icon:'🏠', desc:'让头像有个家', price:200, hot:true},
+      {id:'title_datouerzi', name:'大头儿子称号', icon:'🧒', desc:'会照顾大人的孩子', price:300},
+      {id:'badge_yangtai', name:'阳台小灯', icon:'💡', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_fengzheng', name:'风筝坐骑', icon:'🪁', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_pingdengai', name:'平等之爱守护者', icon:'💞', desc:'最高荣誉称号', price:1000},
+      {id:'frame_weiqun', name:'围裙副框', icon:'🍳', desc:'每天看见家的味道', price:250}
+    ]
+  },
+  yiqi: {
+    title: '一起长大的玩具',
+    subtitle: '物件里的时光',
+    bgImage: '',
+    storageKey: 'yiqi_v1',
+    themeColors: ['#a0c4ff','#fdffb6'],
+    scenes: [
+      {name:'童年抽屉',colors:['#fdffb6','#ffd6a5','#caffbf'],emojis:['🐸','🌀','🔮','📦','🪁','🎏']},
+      {name:'院子陀螺',colors:['#a0c4ff','#caffbf','#fdffb6'],emojis:['🌀','🪢','☀️','🍃','💨','🌈']},
+      {name:'光影万花',colors:['#bdb2ff','#ffc6ff','#fdffb6'],emojis:['🔮','✨','🌈','💎','🪞','🌸']},
+      {name:'怀旧书房',colors:['#ffadad','#ffd6a5','#fdffb6'],emojis:['📚','🪡','🧸','📦','🪵','💌']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'🐸','理解':'🌀','评鉴':'🔮','创意':'🎨','价值':'💝' },
+    npcName:   { '知识':'铁皮青蛙','理解':'陀螺','评鉴':'万花筒','创意':'金波爷爷','价值':'时光匣' },
+    levels: [
+      {id:1,name:'走进金波散文',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'铁皮青蛙',scene:0,type:'normal',icon:'🐸'},
+      {id:3,name:'金波散文味道',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'陀螺',scene:1,type:'normal',icon:'🌀'},
+      {id:5,name:'悠悠球与发条玩具',scene:1,type:'normal',icon:'🪀'},
+      {id:6,name:'万花筒里的时间',scene:2,type:'boss',icon:'👑'},
+      {id:7,name:'弹珠与塑料片',scene:2,type:'normal',icon:'🔮'},
+      {id:8,name:'布娃娃与亲手做的玩具',scene:2,type:'normal',icon:'🧸'},
+      {id:9,name:'怀旧美学',scene:3,type:'boss',icon:'👑'},
+      {id:10,name:'金波这个人',scene:3,type:'normal',icon:'✏️'},
+      {id:11,name:'我的老玩具散文',scene:3,type:'normal',icon:'📝'},
+      {id:12,name:'玩具信箱',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_choutie', name:'童年抽屉相框', icon:'📦', desc:'让头像有个收藏处', price:200, hot:true},
+      {id:'title_jinbo', name:'金波小读者', icon:'📖', desc:'慢下来看小东西', price:300},
+      {id:'badge_wanhua', name:'万花筒提示', icon:'🔮', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_tieqing', name:'铁皮青蛙坐骑', icon:'🐸', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_huijiu', name:'怀旧美学守护者', icon:'💝', desc:'最高荣誉称号', price:1000},
+      {id:'frame_tuoluo', name:'陀螺副框', icon:'🌀', desc:'纹丝不动的稳', price:250}
+    ]
+  },
+  waitou: {
+    title: '歪脑袋木头桩',
+    subtitle: '一根桩的成长',
+    bgImage: '',
+    storageKey: 'waitou_v1',
+    themeColors: ['#caa472','#a8d5a2'],
+    scenes: [
+      {name:'路边小坡',colors:['#fdffb6','#caa472','#a8d5a2'],emojis:['🪵','🐜','🌱','🌿','☀️','🍃']},
+      {name:'草丛邻居',colors:['#a0c4ff','#caffbf','#fdffb6'],emojis:['🐜','🐦','🌾','🍀','🦋','🌼']},
+      {name:'风雨溪边',colors:['#7fb3d5','#bdb2ff','#caa472'],emojis:['🌧️','💧','🌊','⭐','🐟','🪵']},
+      {name:'醒悟之夜',colors:['#2c3e50','#bdb2ff','#fdffb6'],emojis:['🌙','⭐','🪞','💡','🌌','📖']}
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'🪵','理解':'🐜','评鉴':'🐦','创意':'🌊','价值':'⭐' },
+    npcName:   { '知识':'歪木头桩','理解':'小蚂蚁','评鉴':'小麻雀','创意':'小溪','价值':'星星' },
+    levels: [
+      {id:1,name:'走进严文井寓言',scene:0,type:'normal',icon:'📖'},
+      {id:2,name:'木头桩的样子',scene:0,type:'normal',icon:'🪵'},
+      {id:3,name:'骄傲的来源',scene:0,type:'boss',icon:'👑'},
+      {id:4,name:'对小蚂蚁炫耀',scene:1,type:'normal',icon:'🐜'},
+      {id:5,name:'对小麻雀摆架子',scene:1,type:'normal',icon:'🐦'},
+      {id:6,name:'瞧不起小溪 (转折)',scene:1,type:'boss',icon:'👑'},
+      {id:7,name:'一场大雨',scene:2,type:'normal',icon:'🌧️'},
+      {id:8,name:'被冲到溪边',scene:2,type:'normal',icon:'🌊'},
+      {id:9,name:'第一次看见外面',scene:2,type:'boss',icon:'👑'},
+      {id:10,name:'严文井这个人',scene:3,type:'normal',icon:'✏️'},
+      {id:11,name:'我也曾最特别',scene:3,type:'normal',icon:'📝'},
+      {id:12,name:'木头桩信箱',scene:3,type:'boss',icon:'👑'}
+    ],
+    shop: [
+      {id:'frame_zhuang', name:'木头桩相框', icon:'🪵', desc:'让头像有根桩做背景', price:200, hot:true},
+      {id:'title_qianxu', name:'谦虚小读者', icon:'🌿', desc:'看见别人也都有自己的好', price:300},
+      {id:'badge_xingxing', name:'星星提示', icon:'⭐', desc:'答案高亮提示×1', price:150, new:true},
+      {id:'skin_mayi', name:'小蚂蚁坐骑', icon:'🐜', desc:'地图特效装饰', price:500, hot:true},
+      {id:'title_putong', name:'承认自己只是一根桩', icon:'🪞', desc:'最高荣誉称号', price:1000},
+      {id:'frame_xiaoxi', name:'小溪副框', icon:'🌊', desc:'看见外面的眼睛', price:250}
+    ]
+  },
+  daocaoren: { title:'稻草人', subtitle:'中国第一部童话集', bgImage:'', storageKey:'daocaoren_v1', themeColors:['#8b6f3a','#d4b574'], scenes:[ {name:'夜的稻田',colors:['#5a6478','#3e4658','#1c2230'],emojis:['🌾','🌙','⭐','🦗','🪵','🦋']}, {name:'清晨田埂',colors:['#a8956a','#6e5e3e','#3e3624'],emojis:['🌅','🐂','🪶','🌱','🌳','🐦']}, {name:'河边水乡',colors:['#7fa8c5','#3e6a8a','#1c3445'],emojis:['🚣','🐟','🌊','🛶','🪷','🪿']}, {name:'童话书房',colors:['#a89070','#6e5e3e','#3e3624'],emojis:['📚','🪶','📖','🕯','🖋','📜']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🌾','评鉴':'⚖️','创意':'🪶','价值':'🪷' }, npcName:{ '知识':'圣陶简','理解':'稻草翁','评鉴':'裁断公','创意':'童话匠','价值':'悲悯叟' }, levels:[ {id:1,name:'走进叶圣陶·中国第一部',scene:0,type:'normal',icon:'📜'}, {id:2,name:'稻草人精读·无力旁观',scene:0,type:'normal',icon:'🌾'}, {id:3,name:'BOSS·叶圣陶小传与作品',scene:0,type:'boss',icon:'🪶'}, {id:4,name:'古代英雄的石像·骄傲',scene:1,type:'normal',icon:'🗿'}, {id:5,name:'小白船·童心诗意',scene:1,type:'normal',icon:'⛵'}, {id:6,name:'BOSS·中外童话族谱',scene:1,type:'boss',icon:'🌍'}, {id:7,name:'一粒种子·小变化',scene:2,type:'normal',icon:'🌱'}, {id:8,name:'瞎子和聋子·被忽视',scene:2,type:'normal',icon:'👤'}, {id:9,name:'BOSS·原创中国童话',scene:2,type:'boss',icon:'🖋'}, {id:10,name:'快乐的人·讽刺立意',scene:3,type:'normal',icon:'🎭'}, {id:11,name:'母题地图·四大主题',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·叶圣陶精神',scene:3,type:'boss',icon:'🪷'} ], shop:[ {id:'frame_daocao',name:'稻草人边框',icon:'🌾',desc:'中国稻田风头像框',price:200,hot:true}, {id:'title_xiaotonghua',name:'小童话家称号',icon:'🪶',desc:'专属称号「中国小童话家」',price:300}, {id:'badge_lichun',name:'立春提示符',icon:'🌱',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_xiaobaichuan',name:'小白船坐骑',icon:'⛵',desc:'地图特效：叶圣陶小白船',price:500,hot:true}, {id:'title_chuangshi',name:'中国童话开创者',icon:'🪷',desc:'最高荣誉「中国童话传人」',price:1000}, {id:'frame_tianyu',name:'田与稻副框',icon:'🌾',desc:'稻田与田埂主题边框',price:250} ] },
+  gelin: { title:'格林童话', subtitle:'德国民间童话族', bgImage:'', storageKey:'gelin_v1', themeColors:['#5b3a8b','#c8a3d4'], scenes:[ {name:'黑森林',colors:['#3e5c3e','#1e2e1e','#0a1a0a'],emojis:['🌲','🐺','🍎','🌙','🪞','👵']}, {name:'城堡舞会',colors:['#a07560','#5b3a29','#2c1f17'],emojis:['👑','👠','🐸','🏰','💃','🌹']}, {name:'乡间小路',colors:['#a8956a','#6e5e3e','#3e3624'],emojis:['🚶','🍞','🐦','🛖','🐎','🌾']}, {name:'魔法书房',colors:['#8b6f9a','#5b3a8b','#2e1f4d'],emojis:['📜','🪄','🕯','📚','🪶','🔮']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🍎','评鉴':'⚖️','创意':'🪶','价值':'🪞' }, npcName:{ '知识':'格林册','理解':'白雪侍','评鉴':'魔镜判','创意':'童话匠','价值':'打磨翁' }, levels:[ {id:1,name:'走进格林·民间童话从哪里来',scene:0,type:'normal',icon:'📜'}, {id:2,name:'白雪公主·三段式母题',scene:0,type:'normal',icon:'🍎'}, {id:3,name:'BOSS·格林兄弟与民间童话',scene:0,type:'boss',icon:'🪶'}, {id:4,name:'灰姑娘·原型与改编',scene:1,type:'normal',icon:'👠'}, {id:5,name:'小红帽·危险与教训',scene:1,type:'normal',icon:'🐺'}, {id:6,name:'BOSS·童话三族对照',scene:1,type:'boss',icon:'🌍'}, {id:7,name:'渔夫和金鱼·贪婪节制',scene:2,type:'normal',icon:'🐟'}, {id:8,name:'汉赛尔与格莱特·智慧脱险',scene:2,type:'normal',icon:'🍞'}, {id:9,name:'BOSS·原创三段式童话',scene:2,type:'boss',icon:'🖋'}, {id:10,name:'不来梅乐手·弱者联盟',scene:3,type:'normal',icon:'🐴'}, {id:11,name:'母题地图·四大主题',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·童话作为文化基因',scene:3,type:'boss',icon:'🪞'} ], shop:[ {id:'frame_grimm',name:'格林册边框',icon:'📜',desc:'德国民间风羊皮卷头像框',price:200,hot:true}, {id:'title_xiaomintongjia',name:'小民间童话家',icon:'🪶',desc:'专属称号「小民间童话家」',price:300}, {id:'badge_apple',name:'毒苹果提示符',icon:'🍎',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_horse',name:'乡野骏马坐骑',icon:'🐎',desc:'地图特效：德国乡野骏马',price:500,hot:true}, {id:'title_yuanxingshi',name:'童话原型师',icon:'🪞',desc:'最高荣誉「童话原型识别大师」',price:1000}, {id:'frame_glass',name:'玻璃鞋副框',icon:'👠',desc:'灰姑娘玻璃鞋主题边框',price:250} ] },
+  yuyan: { title:'中国古代寓言', subtitle:'诸子寓言闯关', bgImage:'', storageKey:'yuyan_v1', themeColors:['#8b5a2b','#d4a574'], scenes:[ {name:'守株之野',colors:['#d4a574','#8b5a2b','#5d3a1a'],emojis:['🐇','🌲','🌾','🪓','📜','🐂']}, {name:'掩耳之市',colors:['#b08d57','#704214','#3e2410'],emojis:['🔔','👂','🎭','🐍','🦊','🐉']}, {name:'庄周之井',colors:['#6b8e6b','#3e5c3e','#1e2e1e'],emojis:['🐸','🌊','🌌','🐢','🦅','🌑']}, {name:'诸子之堂',colors:['#a8956a','#6e5e3e','#3e3624'],emojis:['📚','🖌','📖','🪶','🏛','⚖️']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🐇','评鉴':'⚖️','创意':'🖌','价值':'🏛' }, npcName:{ '知识':'诸子简','理解':'守株翁','评鉴':'裁断公','创意':'寓言匠','价值':'明理叟' }, levels:[ {id:1,name:'寓言入门·守株待兔',scene:0,type:'normal',icon:'🐇'}, {id:2,name:'刻舟求剑·不顾规律',scene:0,type:'normal',icon:'🪨'}, {id:3,name:'BOSS·诸子寓言出处认祖归宗',scene:0,type:'boss',icon:'📜'}, {id:4,name:'亡羊补牢·知错能改',scene:1,type:'normal',icon:'🐑'}, {id:5,name:'掩耳盗铃·自欺欺人',scene:1,type:'normal',icon:'🔔'}, {id:6,name:'BOSS·中外寓言族对照',scene:1,type:'boss',icon:'🦊'}, {id:7,name:'井底之蛙·见识有限',scene:2,type:'normal',icon:'🐸'}, {id:8,name:'诸子寓言·风格辨析',scene:2,type:'normal',icon:'📚'}, {id:9,name:'BOSS·寓言改写与创编',scene:2,type:'boss',icon:'🖌'}, {id:10,name:'塞翁失马·福祸相依',scene:3,type:'normal',icon:'🐎'}, {id:11,name:'母题地图·四象限归类',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·寓言精神与当代生活',scene:3,type:'boss',icon:'🏛'} ], shop:[ {id:'frame_zhuzi',name:'诸子简框',icon:'📜',desc:'先秦竹简风头像框',price:200,hot:true}, {id:'title_yuyanjia',name:'寓言家称号',icon:'🖌',desc:'专属称号「小寓言家」',price:300}, {id:'badge_zhuanzi',name:'诸子提示符',icon:'⚖️',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_qingniu',name:'青牛坐骑',icon:'🐂',desc:'地图特效：老子骑青牛',price:500,hot:true}, {id:'title_zhuziwang',name:'诸子王者',icon:'🏛',desc:'最高荣誉「诸子王者」',price:1000}, {id:'frame_jingdi',name:'井底之蛙副框',icon:'🐸',desc:'庄子风半圆水纹边框',price:250} ] },
+  kleilov: { title:'克雷洛夫寓言', subtitle:'俄国诗体讽刺', bgImage:'', storageKey:'kleilov_v1', themeColors:['#5b3a29','#c89b7b'], scenes:[ {name:'雪原小径',colors:['#e6e6f0','#b0bcd0','#5a6478'],emojis:['🦊','🐦','🧀','🌲','❄️','🛷']}, {name:'宫廷镜厅',colors:['#a07560','#5b3a29','#2c1f17'],emojis:['🪞','🐒','🐘','🐶','👑','🎻']}, {name:'池畔与河岸',colors:['#7fa8c5','#3e6a8a','#1c3445'],emojis:['🦢','🐟','🦐','🌊','🌾','🚣']}, {name:'诗人书房',colors:['#a89070','#6e5e3e','#3e3624'],emojis:['📜','🪶','📖','🕯','🪑','🖋']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🦊','评鉴':'⚖️','创意':'🪶','价值':'🎻' }, npcName:{ '知识':'诗册官','理解':'雪原狐','评鉴':'裁断老','创意':'诗人羽','价值':'四重乐' }, levels:[ {id:1,name:'走近克雷洛夫·诗体入门',scene:0,type:'normal',icon:'📜'}, {id:2,name:'狐狸和乌鸦·权贵虚伪',scene:0,type:'normal',icon:'🦊'}, {id:3,name:'BOSS·克雷洛夫小传与作品',scene:0,type:'boss',icon:'🪶'}, {id:4,name:'狼和小羊·讲理失效',scene:1,type:'normal',icon:'🐺'}, {id:5,name:'天鹅梭鱼和虾·合作失败',scene:1,type:'normal',icon:'🦢'}, {id:6,name:'BOSS·三族寓言对照',scene:1,type:'boss',icon:'🌍'}, {id:7,name:'池子与河流·双重批评',scene:2,type:'normal',icon:'🌊'}, {id:8,name:'民间智慧·杰米扬的鱼汤',scene:2,type:'normal',icon:'🍲'}, {id:9,name:'BOSS·诗体改写挑战',scene:2,type:'boss',icon:'🖋'}, {id:10,name:'镜子和猴子·自欺',scene:3,type:'normal',icon:'🪞'}, {id:11,name:'母题地图·四大主题归类',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·克雷洛夫精神与当代',scene:3,type:'boss',icon:'🎻'} ], shop:[ {id:'frame_shi',name:'诗册边框',icon:'📜',desc:'俄罗斯诗集风头像框',price:200,hot:true}, {id:'title_shiren',name:'小诗人称号',icon:'🪶',desc:'专属称号「小寓言诗人」',price:300}, {id:'badge_jingzi',name:'镜子提示符',icon:'🪞',desc:'答题时高亮一个错误选项 ×1',price:150,new:true}, {id:'skin_xueqiao',name:'雪橇坐骑',icon:'🛷',desc:'地图特效：俄罗斯雪橇',price:500,hot:true}, {id:'title_renminzhe',name:'人民的智者',icon:'🎻',desc:'最高荣誉「人民的智者」（普希金语）',price:1000}, {id:'frame_chizi',name:'池子与河流副框',icon:'🌊',desc:'池/河双面流动边框',price:250} ] },
+  yisuo: { title:'伊索寓言', subtitle:'古希腊寓言鼻祖', bgImage:'', storageKey:'yisuo_v1', themeColors:['#3a6e8a','#c8a974'], scenes:[ {name:'葡萄园',colors:['#c8a974','#7a5a3a','#3e2e1e'],emojis:['🦊','🍇','🐢','🐰','🌳','☀️']}, {name:'地中海岸',colors:['#7fb9c5','#3e6a8a','#1c3445'],emojis:['🌊','🐑','🐺','⛵','🏛','🌬']}, {name:'希腊广场',colors:['#a89070','#6e5e3e','#3e3624'],emojis:['🏛','📜','⚖️','🎭','🐀','🧀']}, {name:'诸神山巅',colors:['#a07d3a','#5b3a29','#2c1f17'],emojis:['⚡','🦅','🌙','📚','🪶','🔥']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🐢','评鉴':'⚖️','创意':'🪶','价值':'🏛' }, npcName:{ '知识':'伊索翁','理解':'龟兔判官','评鉴':'希腊裁','创意':'寓言鼻','价值':'明智者' }, levels:[ {id:1,name:'走进伊索·奴隶作家',scene:0,type:'normal',icon:'📜'}, {id:2,name:'龟兔赛跑·勤奋胜骄傲',scene:0,type:'normal',icon:'🐢'}, {id:3,name:'BOSS·伊索小传与文体',scene:0,type:'boss',icon:'🪶'}, {id:4,name:'狐狸和葡萄·心理自欺',scene:1,type:'normal',icon:'🦊'}, {id:5,name:'狼来了·诚信代价',scene:1,type:'normal',icon:'🐺'}, {id:6,name:'BOSS·三族寓言对照',scene:1,type:'boss',icon:'🌍'}, {id:7,name:'蚂蚁和蝉·勤劳准备',scene:2,type:'normal',icon:'🐜'}, {id:8,name:'北风和太阳·温柔力量',scene:2,type:'normal',icon:'☀️'}, {id:9,name:'BOSS·伊索式原创创编',scene:2,type:'boss',icon:'🖌'}, {id:10,name:'城里乡下老鼠·价值选择',scene:3,type:'normal',icon:'🐀'}, {id:11,name:'母题地图·四象限归类',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·伊索精神与世界寓言',scene:3,type:'boss',icon:'🏛'} ], shop:[ {id:'frame_yisuo',name:'伊索手卷边框',icon:'📜',desc:'希腊羊皮卷头像框',price:200,hot:true}, {id:'title_xiaoyizuo',name:'小伊索称号',icon:'🪶',desc:'专属称号「小寓言鼻祖」',price:300}, {id:'badge_olive',name:'橄榄叶提示符',icon:'🫒',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_pegasus',name:'飞马坐骑',icon:'🐎',desc:'地图特效：希腊神话飞马',price:500,hot:true}, {id:'title_zhizhe',name:'希腊智者',icon:'🏛',desc:'最高荣誉「世界寓言传人」',price:1000}, {id:'frame_putao',name:'葡萄藤副框',icon:'🍇',desc:'狐狸和葡萄主题边框',price:250} ] },
+  lafengdan: { title:'拉封丹寓言', subtitle:'法国诗体寓言', bgImage:'', storageKey:'lafengdan_v1', themeColors:['#7c3aed','#c026d3'], scenes:[ {name:'凡尔赛宫廷',colors:['#6d28d9','#4c1d95','#1e1b4b'],emojis:['👑','🦚','🕯','📜','🍷','💎']}, {name:'森林溪边',colors:['#15803d','#166534','#14532d'],emojis:['🌲','🐺','🐑','🦊','🌊','🐦']}, {name:'磨坊小镇',colors:['#a16207','#713f12','#451a03'],emojis:['🏚','🐴','🌾','🛠','📜','🥾']}, {name:'诗人书房',colors:['#9333ea','#6b21a8','#3b0764'],emojis:['📜','🪶','📖','🕯','🪞','🎭']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🦊','评鉴':'⚖️','创意':'🪶','价值':'👑' }, npcName:{ '知识':'拉封丹','理解':'狐狸先生','评鉴':'裁断公','创意':'诗人','价值':'太阳王' }, levels:[ {id:1,name:'走进拉封丹·17世纪法国',scene:3,type:'normal',icon:'📜'}, {id:2,name:'乌鸦和狐狸·宫廷话术',scene:0,type:'normal',icon:'🦚'}, {id:3,name:'BOSS·狼和小羊',scene:1,type:'boss',icon:'🐺'}, {id:4,name:'青蛙想长得跟牛一样大',scene:2,type:'normal',icon:'🐸'}, {id:5,name:'狮子和老鼠·弱者有用',scene:1,type:'normal',icon:'🦁'}, {id:6,name:'BOSS·和伊索面对面',scene:3,type:'boss',icon:'⚖'}, {id:7,name:'兔子和乌龟·方向哲学',scene:1,type:'normal',icon:'🐢'}, {id:8,name:'橡树和芦苇·柔与刚',scene:1,type:'normal',icon:'🌾'}, {id:9,name:'BOSS·磨坊主一家',scene:2,type:'boss',icon:'🏚'}, {id:10,name:'老鼠开会·议而不决',scene:0,type:'normal',icon:'🐭'}, {id:11,name:'母题地图·三大主题',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·拉封丹精神',scene:0,type:'boss',icon:'👑'} ], shop:[ {id:'frame_versailles',name:'凡尔赛边框',icon:'👑',desc:'宫廷风头像框',price:200,hot:true}, {id:'title_xiaoshiren',name:'小诗人称号',icon:'🪶',desc:'专属称号「小拉封丹」',price:300}, {id:'badge_fenghuang',name:'凤凰话术识别卡',icon:'🦚',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_lulanger',name:'狐狸先生坐骑',icon:'🦊',desc:'地图特效：宫廷狐狸',price:500,hot:true}, {id:'title_taiyangwang',name:'太阳王诗人',icon:'☀',desc:'最高荣誉「拉封丹传人」',price:1000}, {id:'frame_xiangshu',name:'橡树芦苇副框',icon:'🌳',desc:'柔刚相济主题边框',price:250} ] },
+  xila: { title:'古希腊神话故事', subtitle:'奥林匹斯诸神', bgImage:'', storageKey:'xila_v1', themeColors:['#1e40af','#0891b2'], scenes:[ {name:'奥林匹斯山',colors:['#1e3a8a','#1e40af','#1e293b'],emojis:['⚡','🏔','🦅','🏛','👑','🌌']}, {name:'高加索悬崖',colors:['#475569','#334155','#0f172a'],emojis:['🪨','🦅','⛓','🔥','🌪','🌑']}, {name:'特洛伊战场',colors:['#991b1b','#7f1d1d','#450a0a'],emojis:['🐎','⚔','🛡','🏹','🔥','🏛']}, {name:'冥府入口',colors:['#581c87','#3b0764','#1e1b4b'],emojis:['🎵','🌑','🐕','🌊','💀','🗝']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🦉','评鉴':'⚖','创意':'🎨','价值':'🌟' }, npcName:{ '知识':'赫西俄德','理解':'雅典娜','评鉴':'忒弥斯','创意':'阿波罗','价值':'宙斯' }, levels:[ {id:1,name:'走进奥林匹斯',scene:0,type:'normal',icon:'🏛'}, {id:2,name:'十二主神职能',scene:0,type:'normal',icon:'⚡'}, {id:3,name:'BOSS·普罗米修斯盗火',scene:1,type:'boss',icon:'🔥'}, {id:4,name:'赫拉克勒斯十二功',scene:2,type:'normal',icon:'🦁'}, {id:5,name:'伊卡洛斯飞翔',scene:0,type:'normal',icon:'🦅'}, {id:6,name:'BOSS·和中国神话面对面',scene:0,type:'boss',icon:'⚖'}, {id:7,name:'西西弗斯推石',scene:1,type:'normal',icon:'🪨'}, {id:8,name:'俄耳甫斯救妻',scene:3,type:'normal',icon:'🎵'}, {id:9,name:'BOSS·特洛伊木马',scene:2,type:'boss',icon:'🐎'}, {id:10,name:'潘多拉魔盒',scene:0,type:'normal',icon:'📦'}, {id:11,name:'母题地图·三大主题',scene:0,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·希腊精神',scene:0,type:'boss',icon:'👑'} ], shop:[ {id:'frame_olympus',name:'奥林匹斯边框',icon:'🏛',desc:'希腊神殿风头像框',price:200,hot:true}, {id:'title_xiaohelacles',name:'小赫拉克勒斯称号',icon:'🦁',desc:'专属称号「带伤口的英雄」',price:300}, {id:'badge_pandora',name:'潘多拉希望卡',icon:'📦',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_pegasus',name:'飞马珀伽索斯坐骑',icon:'🐎',desc:'地图特效：希腊神话飞马',price:500,hot:true}, {id:'title_pumixiusi',name:'普罗米修斯传人',icon:'🔥',desc:'最高荣誉「带光明给众人的人」',price:1000}, {id:'frame_athena',name:'雅典娜智慧副框',icon:'🦉',desc:'智慧女神主题边框',price:250} ] },
+  shanhaijing: { title:'山海经', subtitle:'先民的世界档案', bgImage:'', storageKey:'shanhaijing_v1', themeColors:['#0e7490','#15803d'], scenes:[ {name:'青丘异境',colors:['#14532d','#166534','#052e16'],emojis:['🦊','🌿','🌲','🐍','🌫','🦅']}, {name:'钟山幽境',colors:['#1e3a8a','#1e40af','#0f172a'],emojis:['🐉','🌑','⛰','💎','❄','🔥']}, {name:'夸父大荒',colors:['#a16207','#713f12','#451a03'],emojis:['☀','🚶','🌾','🍑','🪵','💧']}, {name:'昆仑圣域',colors:['#7c2d12','#7f1d1d','#450a0a'],emojis:['🏔','🐅','👑','🌹','🦚','🗝']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🦊','评鉴':'⚖','创意':'🪶','价值':'🏔' }, npcName:{ '知识':'禹','理解':'白泽','评鉴':'夔','创意':'巫咸','价值':'西王母' }, levels:[ {id:1,name:'走进山海经·档案体',scene:0,type:'normal',icon:'📜'}, {id:2,name:'异兽志·九尾狐烛龙',scene:0,type:'normal',icon:'🦊'}, {id:3,name:'BOSS·夸父逐日',scene:2,type:'boss',icon:'☀'}, {id:4,name:'精卫填海·永恒执念',scene:1,type:'normal',icon:'🌊'}, {id:5,name:'刑天舞干戚·不屈意志',scene:2,type:'normal',icon:'⚔'}, {id:6,name:'BOSS·记录 vs 叙事',scene:0,type:'boss',icon:'⚖'}, {id:7,name:'烛龙与昼夜',scene:1,type:'normal',icon:'🐉'}, {id:8,name:'西王母与昆仑',scene:3,type:'normal',icon:'🏔'}, {id:9,name:'BOSS·三大异兽',scene:0,type:'boss',icon:'🐅'}, {id:10,name:'地理志·五山经',scene:0,type:'normal',icon:'🗺'}, {id:11,name:'母题地图·三大主题',scene:0,type:'normal',icon:'📋'}, {id:12,name:'终极BOSS·山海经精神',scene:3,type:'boss',icon:'👑'} ], shop:[ {id:'frame_qingqiu',name:'青丘异境边框',icon:'🦊',desc:'山海经九尾狐主题边框',price:200,hot:true}, {id:'title_xiaoyuhang',name:'小禹行称号',icon:'🚶',desc:'专属称号「行走的山海经记录者」',price:300}, {id:'badge_baizé',name:'白泽指物卡',icon:'🐅',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_zhulong',name:'烛龙坐骑',icon:'🐉',desc:'地图特效：人面蛇身千里烛龙',price:500,hot:true}, {id:'title_kunlunshouwang',name:'昆仑守望者',icon:'🏔',desc:'最高荣誉「先民档案传人」',price:1000}, {id:'frame_kuafu',name:'夸父邓林副框',icon:'🪵',desc:'失败也留福荫主题边框',price:250} ] },
+  jierjia: { title:'吉尔伽美什', subtitle:'人类最早的英雄史诗', bgImage:'', storageKey:'jierjia_v1', themeColors:['#b45309','#7c2d12'], scenes:[ {name:'乌鲁克城墙',colors:['#92400e','#78350f','#431407'],emojis:['🏛','🌅','🐂','📜','👑','🌾']}, {name:'雪松林深处',colors:['#14532d','#166534','#052e16'],emojis:['🌲','🪓','⚔','🦁','🌫','🌑']}, {name:'死亡之海',colors:['#0c4a6e','#075985','#0f172a'],emojis:['🌊','⛵','🌑','💀','🐍','⚡']}, {name:'尼尼微泥板厅',colors:['#7c2d12','#9a3412','#451a03'],emojis:['📜','🗿','🪶','🕯','🏺','💎']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📜','理解':'🦁','评鉴':'⚖','创意':'🪶','价值':'🏛' }, npcName:{ '知识':'辛—列奇—温尼尼','理解':'恩奇都','评鉴':'乌特那比西丁','创意':'西杜丽','价值':'吉尔伽美什' }, levels:[ {id:1,name:'走进吉尔伽美什',scene:0,type:'normal',icon:'🏛'}, {id:2,name:'暴君与挚友·搏斗结义',scene:0,type:'normal',icon:'🤝'}, {id:3,name:'BOSS·斗杀洪巴巴',scene:1,type:'boss',icon:'⚔'}, {id:4,name:'斩天牛与失友',scene:0,type:'normal',icon:'🐂'}, {id:5,name:'求永生·跨死海',scene:2,type:'normal',icon:'⛵'}, {id:6,name:'BOSS·三族洪水对照',scene:2,type:'boss',icon:'🌊'}, {id:7,name:'乌特那比西丁的考验',scene:2,type:'normal',icon:'🍞'}, {id:8,name:'长生草与蛇',scene:2,type:'normal',icon:'🐍'}, {id:9,name:'BOSS·望见城墙',scene:0,type:'boss',icon:'🏛'}, {id:10,name:'人类最早的提问',scene:3,type:'normal',icon:'📜'}, {id:11,name:'母题地图·四大主题',scene:3,type:'normal',icon:'🗺'}, {id:12,name:'终极BOSS·吉尔伽美什精神',scene:3,type:'boss',icon:'👑'} ], shop:[ {id:'frame_uruk',name:'乌鲁克城墙边框',icon:'🏛',desc:'苏美尔风头像框',price:200,hot:true}, {id:'title_xiaojier',name:'小吉尔伽美什称号',icon:'⚔',desc:'专属称号「学会脆弱的英雄」',price:300}, {id:'badge_changshengcao',name:'长生草记忆卡',icon:'🌿',desc:'答题时高亮提示一项 ×1',price:150,new:true}, {id:'skin_enkidu',name:'恩奇都同伴坐骑',icon:'🦁',desc:'地图特效：草原野人挚友',price:500,hot:true}, {id:'title_chenqiang',name:'乌鲁克城墙守望者',icon:'🏛',desc:'最高荣誉「不朽在事功」',price:1000}, {id:'frame_xiezi',name:'楔形泥板副框',icon:'📜',desc:'人类最早文字主题边框',price:250} ] },
+  shiwan: { title:'十万个为什么', subtitle:'屋内旅行闯关', bgImage:'', storageKey:'shiwan_v1', themeColors:['#3a8dde','#a5d8ff'], scenes:[ {name:'水龙头之家',colors:['#a5d8ff','#3a8dde','#1e4a7a'],emojis:['🚰','💧','🌊','🪣','🧪','📊']}, {name:'炉火之间',colors:['#ffb24a','#d4691f','#7a3a10'],emojis:['🔥','🍳','🌡','💨','🕯','⚗️']}, {name:'餐桌厨房',colors:['#f4d35e','#e0a82e','#8a6914'],emojis:['🍞','🧂','🥚','🥛','🥄','🧫']}, {name:'书架衣柜',colors:['#d8c3a5','#8e7855','#3e2e1c'],emojis:['📖','👕','🧦','🧵','📜','🖋']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🚰','理解':'🔬','评鉴':'⚖️','创意':'🖋','价值':'🌟' }, npcName:{ '知识':'伊林叔','理解':'实验员','评鉴':'对照公','创意':'科普匠','价值':'好奇心' }, levels:[ {id:1,name:'屋内第一站·水龙头',scene:0,type:'normal',icon:'🚰'}, {id:2,name:'炉子·火的故事',scene:1,type:'normal',icon:'🔥'}, {id:3,name:'BOSS·三种传热方式认领',scene:1,type:'boss',icon:'🌡'}, {id:4,name:'餐桌·面包与盐',scene:2,type:'normal',icon:'🍞'}, {id:5,name:'厨房·锅碗瓢盆',scene:2,type:'normal',icon:'🍳'}, {id:6,name:'BOSS·实验设计认证',scene:2,type:'boss',icon:'🧪'}, {id:7,name:'衣柜·棉麻丝毛',scene:3,type:'normal',icon:'👕'}, {id:8,name:'书架·纸与墨',scene:3,type:'normal',icon:'📖'}, {id:9,name:'BOSS·两版科普写法对比',scene:3,type:'boss',icon:'⚖️'}, {id:10,name:'屋外延展·从厨房到太空',scene:0,type:'normal',icon:'🌌'}, {id:11,name:'知识卡精灵·概念辨析',scene:0,type:'normal',icon:'📇'}, {id:12,name:'终极BOSS·我家屋内旅行记',scene:0,type:'boss',icon:'🏆'} ], shop:[ {id:'frame_yilin',name:'伊林头像框',icon:'🚰',desc:'米·伊林苏联风蓝色头像框',price:200,hot:true}, {id:'title_kepujia',name:'科普家称号',icon:'🖋',desc:'专属称号「小科普家」',price:300}, {id:'badge_duizhao',name:'对照组徽章',icon:'⚖️',desc:'答题时高亮提示对照组×1',price:150,new:true}, {id:'skin_jiating',name:'家庭实验室坐骑',icon:'🧪',desc:'地图特效：实验台装饰',price:500,hot:true}, {id:'title_haoqixin',name:'终身好奇心王者',icon:'🌟',desc:'最高荣誉「好奇心王者」',price:1000}, {id:'frame_luxing',name:'屋内旅行副框',icon:'🏠',desc:'六站旅行风边框',price:250} ] },
+  dadi: { title:'看看我们的地球', subtitle:'地质考察闯关', bgImage:'', storageKey:'dadi_v1', themeColors:['#5d3a1a','#d4a574'], scenes:[ {name:'地球之家',colors:['#a5c4d4','#3a6d8d','#1a3950'],emojis:['🌍','🪨','🌋','💎','🗺','📐']}, {name:'熔岩地带',colors:['#ff6b35','#c63d0f','#5a1a04'],emojis:['🔥','🌋','💥','🪨','⚡','🪨']}, {name:'冰川之野',colors:['#cfe8f0','#7ab1c4','#2c5566'],emojis:['🧊','❄️','🏔','🪨','🐧','🦣']}, {name:'矿藏之库',colors:['#ffd700','#b8860b','#5a4408'],emojis:['💎','⛏','🛢','💰','📜','🏛']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🪨','理解':'🔬','评鉴':'⚖️','创意':'🖋','价值':'🌏' }, npcName:{ '知识':'四光公','理解':'地质员','评鉴':'证据公','创意':'地质匠','价值':'土地心' }, levels:[ {id:1,name:'走进地球·三层结构',scene:0,type:'normal',icon:'🌍'}, {id:2,name:'地球的年龄·测年方法',scene:0,type:'normal',icon:'🪨'}, {id:3,name:'BOSS·岩石身份大考',scene:0,type:'boss',icon:'💎'}, {id:4,name:'板块漂移·从猜到证',scene:1,type:'normal',icon:'🗺'}, {id:5,name:'地震与火山·地球的脉搏',scene:1,type:'normal',icon:'🌋'}, {id:6,name:'BOSS·李四光的冰川证据链',scene:2,type:'boss',icon:'🧊'}, {id:7,name:'冰川的全球意义',scene:2,type:'normal',icon:'🏔'}, {id:8,name:'煤油矿·地质学的国家意义',scene:3,type:'normal',icon:'🛢'}, {id:9,name:'BOSS·李四光 VS 米·伊林笔法决战',scene:3,type:'boss',icon:'⚔️'}, {id:10,name:'地球与人类·当代地质问题',scene:0,type:'normal',icon:'🌡'}, {id:11,name:'地球时间·尺度感',scene:1,type:'normal',icon:'⏳'}, {id:12,name:'终极BOSS·我读懂了脚下的中国',scene:3,type:'boss',icon:'🏆'} ], shop:[ {id:'frame_siguang',name:'四光公头像框',icon:'🪨',desc:'李四光肖像金边头像框',price:200,hot:true}, {id:'title_dizhi',name:'地质考察家称号',icon:'⛏',desc:'专属称号「小地质家」',price:300}, {id:'badge_zhengju',name:'证据链徽章',icon:'⚖️',desc:'答题时高亮一个证据×1',price:150,new:true}, {id:'skin_bingchuan',name:'冰川探险坐骑',icon:'🦣',desc:'地图特效：冰川动物装饰',price:500,hot:true}, {id:'title_didukan',name:'土地读懂者王者',icon:'🌏',desc:'最高荣誉「读懂中国土地」',price:1000}, {id:'frame_yanshi',name:'岩石分类副框',icon:'💎',desc:'三类岩石图样边框',price:250} ] },
+  huichen: { title:'灰尘的旅行', subtitle:'拟人科普探险', bgImage:'', storageKey:'huichen_v1', themeColors:['#7d6b9c','#e0c4ed'], scenes:[ {name:'微尘宇宙',colors:['#d8c4e8','#9176b4','#4a3666'],emojis:['💨','✨','🌬','🪶','☁','🌫']}, {name:'菌儿世界',colors:['#a8d896','#5fa657','#2c5e25'],emojis:['🦠','🧫','🍞','🥛','🧀','🌿']}, {name:'病榻书桌',colors:['#fce4a8','#d4a849','#7d5a1c'],emojis:['📖','✒','💌','🕯','📜','🎓']}, {name:'科普殿堂',colors:['#c8a8e0','#8b6cab','#3e2a52'],emojis:['🌍','🔬','📚','🪐','🌌','💡']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🦠','理解':'🔬','评鉴':'⚖️','创意':'✒','价值':'❤️' }, npcName:{ '知识':'尘小弟','理解':'菌儿姐','评鉴':'高公公','创意':'拟人匠','价值':'科普心' }, levels:[ {id:1,name:'认识高士其·中国科普之父',scene:2,type:'normal',icon:'🎓'}, {id:2,name:'灰尘的身世·从哪来',scene:0,type:'normal',icon:'💨'}, {id:3,name:'BOSS·灰尘的双面身份大考',scene:0,type:'boss',icon:'⚔️'}, {id:4,name:'细菌世界·菌儿是谁',scene:1,type:'normal',icon:'🦠'}, {id:5,name:'巴斯德与人类对菌的认识',scene:1,type:'normal',icon:'🔬'}, {id:6,name:'BOSS·人体里的微生物城市',scene:1,type:'boss',icon:'🏛'}, {id:7,name:'高士其的笔法·拟人三层',scene:2,type:'normal',icon:'📖'}, {id:8,name:'灰尘菌儿与现代生活',scene:3,type:'normal',icon:'😷'}, {id:9,name:'BOSS·三种科普笔法决战',scene:3,type:'boss',icon:'⚔️'}, {id:10,name:'高士其的精神·病榻上的科普家',scene:2,type:'normal',icon:'❤️'}, {id:11,name:'微观视角·让小事物开口',scene:0,type:'normal',icon:'👁'}, {id:12,name:'终极BOSS·让事物自己说话',scene:3,type:'boss',icon:'🏆'} ], shop:[ {id:'frame_gaoshi',name:'高士其头像框',icon:'🎓',desc:'科普之父肖像金边头像框',price:200,hot:true}, {id:'title_yiwei',name:'拟人匠称号',icon:'✒',desc:'专属称号「让事物开口的人」',price:300}, {id:'badge_weisheng',name:'微观视角徽章',icon:'🔬',desc:'答题时高亮微观线索×1',price:150,new:true}, {id:'skin_juner',name:'菌儿小队坐骑',icon:'🦠',desc:'地图特效：菌儿大军装饰',price:500,hot:true}, {id:'title_kepuxin',name:'让科学有温度王者',icon:'❤️',desc:'最高荣誉「中国科普传人」',price:1000}, {id:'frame_huichen',name:'灰尘旅行副框',icon:'💨',desc:'灰尘旋转图样边框',price:250} ] },
+  renlei: { title:'人类起源的演化过程', subtitle:'考古证据闯关', bgImage:'', storageKey:'renlei_v1', themeColors:['#5a4030','#c4a07a'], scenes:[ {name:'非洲故乡',colors:['#e8c490','#a87842','#5a3818'],emojis:['🦴','🌍','🌳','🐒','☀','🦴']}, {name:'周口店',colors:['#c0a880','#856b40','#3a2c14'],emojis:['🪨','🔥','🦴','⛏','🕳','💀']}, {name:'石器工坊',colors:['#a89c80','#6e6044','#28201c'],emojis:['🪓','🔨','🪨','🪵','⚒','🏹']}, {name:'人类殿堂',colors:['#dac4ad','#92765a','#4a3826'],emojis:['🧑','🧬','🌍','📜','🏛','✨']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🦴','理解':'⛏','评鉴':'⚖️','创意':'✒','价值':'🌍' }, npcName:{ '知识':'化石公','理解':'考古员','评鉴':'证据公','创意':'推理匠','价值':'人类心' }, levels:[ {id:1,name:'认识贾兰坡·中国考古学家',scene:1,type:'normal',icon:'⛏'}, {id:2,name:'我们从哪里来·神话 VS 科学',scene:3,type:'normal',icon:'🌍'}, {id:3,name:'BOSS·人类家谱大考',scene:3,type:'boss',icon:'🧬'}, {id:4,name:'化石是怎么形成的',scene:0,type:'normal',icon:'🦴'}, {id:5,name:'证据 1·直立行走',scene:0,type:'normal',icon:'🚶'}, {id:6,name:'BOSS·北京人四证据链',scene:1,type:'boss',icon:'⚔️'}, {id:7,name:'证据 3·工具制造',scene:2,type:'normal',icon:'🪓'}, {id:8,name:'证据 4·火的革命',scene:1,type:'normal',icon:'🔥'}, {id:9,name:'BOSS·神话 VS 科学 VS 推理三笔法',scene:3,type:'boss',icon:'⚔️'}, {id:10,name:'中国古人类·世界版图上的中国',scene:3,type:'normal',icon:'🇨🇳'}, {id:11,name:'证据链思维·终身受益',scene:2,type:'normal',icon:'🔍'}, {id:12,name:'终极BOSS·我读懂了人的来路',scene:3,type:'boss',icon:'🏆'} ], shop:[ {id:'frame_jialanpo',name:'贾兰坡头像框',icon:'⛏',desc:'考古学家肖像金边头像框',price:200,hot:true}, {id:'title_kaogu',name:'小考古学家称号',icon:'🦴',desc:'专属称号「找祖先的少年」',price:300}, {id:'badge_zhengju',name:'四证据链徽章',icon:'⚖️',desc:'答题时高亮一类证据×1',price:150,new:true}, {id:'skin_zhoukoudian',name:'周口店探险坐骑',icon:'🦣',desc:'地图特效：远古动物装饰',price:500,hot:true}, {id:'title_renlu',name:'读懂人的来路王者',icon:'🌍',desc:'最高荣誉「人类演化之子」',price:1000}, {id:'frame_yanshi',name:'石器工坊副框',icon:'🪓',desc:'打制石器图样边框',price:250} ] },
+  oulu: { title:'欧洲民间故事', subtitle:'城堡里的逆袭', bgImage:'', storageKey:'oulu_v1', themeColors:['#7c3aed','#ec4899'], scenes:[ {name:'魔法森林', colors:['#1e3a8a','#581c87','#0f172a'], emojis:['🍎','👑','🪄','🌲','🦋','💎']}, {name:'城堡舞会', colors:['#9d174d','#831843','#3b0764'], emojis:['👠','🕯️','🎻','💃','🌹','🍷']}, {name:'勇士之路', colors:['#92400e','#7c2d12','#450a0a'], emojis:['🐉','⚔️','🛡️','🏰','🐎','🔥']}, {name:'跨文化故事会', colors:['#0e7490','#0c4a6e','#1e1b4b'], emojis:['📜','🌏','🪄','🐲','🦋','✨']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🪄', '理解':'📖', '评鉴':'⚖️', '创意':'🎨', '价值':'🌟' }, npcName:{ '知识':'格林兄弟', '理解':'白雪公主', '评鉴':'魔镜', '创意':'仙女教母', '价值':'灰姑娘' }, levels:[ {id:1,name:'走进欧洲民间故事',scene:0,type:'normal',icon:'📚'}, {id:2,name:'魔法的森林',scene:0,type:'normal',icon:'🌲'}, {id:3,name:'水晶鞋之夜',scene:1,type:'boss',icon:'👠'}, {id:4,name:'青蛙王子',scene:0,type:'normal',icon:'🐸'}, {id:5,name:'勇敢的小裁缝',scene:2,type:'normal',icon:'✂️'}, {id:6,name:'穿靴子的猫',scene:2,type:'boss',icon:'🐈'}, {id:7,name:'屠龙的勇士',scene:2,type:'normal',icon:'🐉'}, {id:8,name:'三兄弟的考验',scene:2,type:'normal',icon:'👬'}, {id:9,name:'东西方对照',scene:3,type:'boss',icon:'🌏'}, {id:10,name:'魔法物件大解密',scene:3,type:'normal',icon:'💎'}, {id:11,name:'谁是真正的英雄',scene:3,type:'normal',icon:'🛡️'}, {id:12,name:'让故事流动起来',scene:3,type:'boss',icon:'🦋'} ], shop:[ {id:'frame_water', name:'水晶鞋光环', icon:'👠', desc:'答题界面专属水晶光效', price:200, hot:true}, {id:'title_brave', name:'勇敢的小裁缝·称号', icon:'✂️', desc:'欧洲民间故事爱好者证书', price:300}, {id:'badge_apple', name:'魔镜提示卡', icon:'🪞', desc:'答案高亮提示×1', price:150, new:true}, {id:'skin_dragon', name:'屠龙坐骑', icon:'🐉', desc:'地图特效装饰', price:500, hot:true}, {id:'title_top', name:'欧洲故事大师', icon:'👑', desc:'最高荣誉称号', price:1000}, {id:'frame_castle', name:'城堡边框', icon:'🏰', desc:'头像金色城堡边框', price:250} ] },
+  feizhou: { title:'非洲民间故事', subtitle:'篝火旁的智慧', bgImage:'', storageKey:'feizhou_v1', themeColors:['#f97316','#dc2626'], scenes:[ {name:'篝火夜话', colors:['#7c2d12','#451a03','#1c1917'], emojis:['🔥','🥁','🌙','🦒','🌳','✨']}, {name:'非洲草原', colors:['#a16207','#854d0e','#422006'], emojis:['🦁','🐰','🦓','🌳','🐘','🌅']}, {name:'雨林深处', colors:['#15803d','#14532d','#052e16'], emojis:['🕷️','🌿','🐍','🦜','🌴','🍃']}, {name:'部族议事', colors:['#9f1239','#881337','#3f0410'], emojis:['🥁','👴','📜','🌳','🤝','🔥']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'🥁', '理解':'🕷️', '评鉴':'⚖️', '创意':'🎨', '价值':'🌟' }, npcName:{ '知识':'部族长者', '理解':'蜘蛛阿南西', '评鉴':'草原裁判', '创意':'故事编织者', '价值':'祖灵之声' }, levels:[ {id:1,name:'走进非洲民间故事',scene:0,type:'normal',icon:'📚'}, {id:2,name:'阿南西的智慧罐',scene:2,type:'normal',icon:'🕷️'}, {id:3,name:'光与影的阿南西',scene:2,type:'boss',icon:'🌗'}, {id:4,name:'兔子的智慧',scene:1,type:'normal',icon:'🐰'}, {id:5,name:'狡猾的鬣狗',scene:1,type:'normal',icon:'🦊'}, {id:6,name:'草原智慧学',scene:1,type:'boss',icon:'🌅'}, {id:7,name:'万物有灵',scene:2,type:'normal',icon:'🌳'}, {id:8,name:'部族集体观',scene:3,type:'normal',icon:'🤝'}, {id:9,name:'东西方对照',scene:3,type:'boss',icon:'🌏'}, {id:10,name:'教训自生',scene:0,type:'normal',icon:'💡'}, {id:11,name:'谁是非洲英雄',scene:0,type:'normal',icon:'🛡️'}, {id:12,name:'让故事流动起来',scene:3,type:'boss',icon:'🔥'} ], shop:[ {id:'frame_baobab', name:'猴面包树框', icon:'🌳', desc:'答题界面专属树影背景', price:200, hot:true}, {id:'title_anansi', name:'阿南西继承者', icon:'🕷️', desc:'非洲民间故事爱好者证书', price:300}, {id:'badge_drum', name:'部族鼓声卡', icon:'🥁', desc:'答案高亮提示×1', price:150, new:true}, {id:'skin_rabbit', name:'草原小兔坐骑', icon:'🐰', desc:'地图特效装饰', price:500, hot:true}, {id:'title_top', name:'部族故事大师', icon:'👑', desc:'最高荣誉称号', price:1000}, {id:'frame_fire', name:'篝火边框', icon:'🔥', desc:'头像火光边框', price:250} ] },
+  eluosi: { title:'俄罗斯民间故事', subtitle:'大森林深处', bgImage:'', storageKey:'eluosi_v1', themeColors:['#1e40af','#0e7490'], scenes:[ {name:'大森林深处', colors:['#14532d','#052e16','#0c0a09'], emojis:['🌲','🌌','🦊','🐻','🐺','❄️']}, {name:'长鸡腿小屋', colors:['#7c2d12','#451a03','#1c1917'], emojis:['🏚️','🔥','🧙','🦴','🕯️','🌙']}, {name:'冰封王国', colors:['#0c4a6e','#082f49','#020617'], emojis:['❄️','🏰','👑','🔥','🐎','✨']}, {name:'伊万的村庄', colors:['#92400e','#7c2d12','#451a03'], emojis:['🏡','🐔','🌾','🐎','🪵','🍯']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📚', '理解':'🧙', '评鉴':'⚖️', '创意':'🎨', '价值':'🌟' }, npcName:{ '知识':'阿法纳西耶夫', '理解':'瓦西丽萨', '评鉴':'森林之神', '创意':'伊万王子', '价值':'灰狼伙伴' }, levels:[ {id:1,name:'走进大森林',scene:0,type:'normal',icon:'🌲'}, {id:2,name:'森林老巫婆',scene:1,type:'normal',icon:'🧙'}, {id:3,name:'瓦西丽萨与火光',scene:1,type:'boss',icon:'🔥'}, {id:4,name:'三件善事的回报',scene:3,type:'normal',icon:'🐟'}, {id:5,name:'灰狼相助',scene:0,type:'normal',icon:'🐺'}, {id:6,name:'大森林精神底色',scene:0,type:'boss',icon:'🌌'}, {id:7,name:'火鸟与小驼马',scene:2,type:'normal',icon:'🔥'}, {id:8,name:'女性主角群像',scene:2,type:'normal',icon:'👸'}, {id:9,name:'东西方三角对照',scene:3,type:'boss',icon:'🌏'}, {id:10,name:'魔法物件大解密',scene:1,type:'normal',icon:'💎'}, {id:11,name:'谁是真正的英雄',scene:3,type:'normal',icon:'🛡️'}, {id:12,name:'让故事流动起来',scene:2,type:'boss',icon:'❄️'} ], shop:[ {id:'frame_forest', name:'大森林边框', icon:'🌲', desc:'答题界面专属松林边框', price:200, hot:true}, {id:'title_ivan', name:'傻瓜伊万继承者', icon:'🌟', desc:'俄罗斯民间故事爱好者证书', price:300}, {id:'badge_fire', name:'骷髅火光卡', icon:'🔥', desc:'答案高亮提示×1', price:150, new:true}, {id:'skin_wolf', name:'灰狼坐骑', icon:'🐺', desc:'地图特效装饰', price:500, hot:true}, {id:'title_top', name:'俄罗斯故事大师', icon:'👑', desc:'最高荣誉称号', price:1000}, {id:'frame_izba', name:'伊兹巴小屋框', icon:'🏚️', desc:'头像森林小屋边框', price:250} ] },
+  yulai: { title:'小英雄雨来', subtitle:'还乡河边的少年', bgImage:'', storageKey:'yulai_v1', themeColors:['#b91c1c','#7c2d12'], scenes:[ {name:'还乡河边', colors:['#0c4a6e','#082f49','#020617'], emojis:['🌊','🐟','🌾','🪿','🌳','💧']}, {name:'夜校灯下', colors:['#7c2d12','#451a03','#1c1917'], emojis:['📖','🕯️','✍️','📜','🇨🇳','🌙']}, {name:'战火村庄', colors:['#7f1d1d','#450a0a','#1c1917'], emojis:['🔥','💔','😢','🏚️','🌫️','⚔️']}, {name:'胜利归来', colors:['#92400e','#7c2d12','#451a03'], emojis:['🌅','🤝','😄','🌾','🐎','✨']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📖', '理解':'🌊', '评鉴':'⚖️', '创意':'🎨', '价值':'🌟' }, npcName:{ '知识':'夜校老师', '理解':'雨来本人', '评鉴':'还乡河', '创意':'管桦', '价值':'李大叔' }, levels:[ {id:1,name:'走进还乡河',scene:0,type:'normal',icon:'🌊'}, {id:2,name:'孩子的雨来',scene:0,type:'normal',icon:'🐟'}, {id:3,name:'挨打那一段',scene:2,type:'boss',icon:'💔'}, {id:4,name:'水底逃生',scene:0,type:'normal',icon:'💧'}, {id:5,name:'雨来的妈妈',scene:1,type:'normal',icon:'❤️'}, {id:6,name:'夜校那句话',scene:1,type:'boss',icon:'🇨🇳'}, {id:7,name:'李大叔与成人世界',scene:2,type:'normal',icon:'🤝'}, {id:8,name:'还乡河村群像',scene:1,type:'normal',icon:'🏘️'}, {id:9,name:'两种英雄对照',scene:2,type:'boss',icon:'⚖️'}, {id:10,name:'细节里的重量',scene:1,type:'normal',icon:'⚖️'}, {id:11,name:'谁是真正的英雄',scene:3,type:'normal',icon:'🛡️'}, {id:12,name:'今天的雨来',scene:3,type:'boss',icon:'🌅'} ], shop:[ {id:'frame_river', name:'还乡河边框', icon:'🌊', desc:'答题界面专属水波边框', price:200, hot:true}, {id:'title_yulai', name:'雨来式少年', icon:'🛡️', desc:'小英雄雨来读者勋章', price:300}, {id:'badge_school', name:'夜校识字卡', icon:'📖', desc:'答案高亮提示×1', price:150, new:true}, {id:'skin_horse', name:'还乡河小马', icon:'🐎', desc:'地图特效装饰', price:500, hot:true}, {id:'title_top', name:'双视角阅读大师', icon:'👑', desc:'最高荣誉称号', price:1000}, {id:'frame_dawn', name:'胜利归来框', icon:'🌅', desc:'头像晨曦边框', price:250} ] },
+  aidejiaoyu: { title:'爱的教育', subtitle:'365个爱的瞬间', bgImage:'', storageKey:'aidejiaoyu_v1', themeColors:['#db2777','#9333ea'], scenes:[ {name:'意大利小学', colors:['#7c2d12','#451a03','#1c1917'], emojis:['📚','🇮🇹','🖊️','🏫','✍️','📖']}, {name:'家中夜灯', colors:['#1e40af','#1e3a8a','#0f172a'], emojis:['🕯️','📃','💭','👨‍👦','✉️','💕']}, {name:'校园群像', colors:['#0e7490','#0c4a6e','#1e1b4b'], emojis:['🤝','💪','📒','🌳','⚽','📕']}, {name:'每月故事会', colors:['#9d174d','#831843','#3b0764'], emojis:['📜','🎭','✨','🏛️','🌹','💖']} ], sceneBg:['','','',''], bossBg:{3:'',6:'',9:'',12:''}, npcAvatar:{ '知识':'📖', '理解':'✍️', '评鉴':'⚖️', '创意':'🎨', '价值':'💖' }, npcName:{ '知识':'夏丏尊先生', '理解':'安利柯', '评鉴':'校长', '创意':'亚米契斯', '价值':'卡隆' }, levels:[ {id:1,name:'走进意大利小学',scene:0,type:'normal',icon:'🏫'}, {id:2,name:'安利柯与日记体',scene:1,type:'normal',icon:'📒'}, {id:3,name:'《少年笔耕》',scene:3,type:'boss',icon:'🖋️'}, {id:4,name:'卡隆 保护弱者',scene:2,type:'normal',icon:'🛡️'}, {id:5,name:'德罗西与波列科西',scene:2,type:'normal',icon:'🤝'}, {id:6,name:'可莱蒂 劳动者尊严',scene:2,type:'boss',icon:'💪'}, {id:7,name:'每月故事的功能',scene:3,type:'normal',icon:'📜'}, {id:8,name:'父亲家书',scene:1,type:'normal',icon:'✉️'}, {id:9,name:'与《童年》对照',scene:0,type:'boss',icon:'⚖️'}, {id:10,name:'细节里的爱',scene:1,type:'normal',icon:'💕'}, {id:11,name:'谁是真正的爱',scene:0,type:'normal',icon:'🌟'}, {id:12,name:'我的爱的教育',scene:3,type:'boss',icon:'📓'} ], shop:[ {id:'frame_letter', name:'家书边框', icon:'✉️', desc:'答题界面专属信纸边框', price:200, hot:true}, {id:'title_enrico', name:'安利柯日记伙伴', icon:'📒', desc:'爱的教育读者勋章', price:300}, {id:'badge_lamp', name:'夜灯笔耕卡', icon:'🕯️', desc:'答案高亮提示×1', price:150, new:true}, {id:'skin_dove', name:'意大利白鸽', icon:'🕊️', desc:'地图特效装饰', price:500, hot:true}, {id:'title_top', name:'日记体阅读大师', icon:'👑', desc:'最高荣誉称号', price:1000}, {id:'frame_diary', name:'日记本边框', icon:'📓', desc:'头像皮质日记本边框', price:250} ] },
+  lubinxun: {
+    title: '鲁滨逊漂流记',
+    subtitle: '孤岛28年',
+    bgImage: '',
+    storageKey: 'lubinxun_v1',
+    themeColors: ['#0a4d6c', '#f4a261'],
+    scenes: [
+      { name:'风暴出海', colors:['#073b4c','#118ab2','#0a4d6c'], emojis:['⛵','🌊','⚓','🌧️','💨','🌫️'] },
+      { name:'孤岛求生', colors:['#f4a261','#e76f51','#264653'], emojis:['🏝️','🌴','🪵','🔨','🌽','🐐'] },
+      { name:'遇见星期五', colors:['#2a9d8f','#e9c46a','#264653'], emojis:['👣','🦜','🏹','🤝','📜','🔥'] },
+      { name:'离岛回英', colors:['#06d6a0','#1d3557','#a8dadc'], emojis:['⛴️','🌅','🏠','📔','🪙','🌍'] }
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'⚓','理解':'📔','评鉴':'⚖️','创意':'🎨','价值':'🌟' },
+    npcName: { '知识':'船长','理解':'账本管家','评鉴':'批评家','创意':'木匠师','价值':'鲁滨逊本人' },
+    levels: [
+      { id:1, name:'走进笛福', scene:0, type:'normal', icon:'📖' },
+      { id:2, name:'离家出海', scene:0, type:'normal', icon:'⛵' },
+      { id:3, name:'第三次海难', scene:0, type:'boss', icon:'🌊' },
+      { id:4, name:'好处坏处账本', scene:1, type:'normal', icon:'📔' },
+      { id:5, name:'物资清单', scene:1, type:'normal', icon:'🧰' },
+      { id:6, name:'造历种麦', scene:1, type:'boss', icon:'🌾' },
+      { id:7, name:'孤独的精神生活', scene:2, type:'normal', icon:'🦜' },
+      { id:8, name:'脚印之惊', scene:2, type:'normal', icon:'👣' },
+      { id:9, name:'救下星期五', scene:2, type:'boss', icon:'🤝' },
+      { id:10, name:'主仆相处', scene:3, type:'normal', icon:'🏠' },
+      { id:11, name:'离岛回英', scene:3, type:'normal', icon:'⛴️' },
+      { id:12, name:'重建与反思', scene:3, type:'boss', icon:'🌟' }
+    ],
+    shop: [
+      { id:'frame_compass', name:'罗盘金框', icon:'🧭', desc:'孤岛探险者头像金框', price:200, hot:true },
+      { id:'title_keeper', name:'账本管家', icon:'📔', desc:'孤岛理性方法称号', price:300 },
+      { id:'badge_hint', name:'木桩提示', icon:'🪵', desc:'答案高亮提示×1', price:150, new:true },
+      { id:'skin_parrot', name:'鹦鹉伙伴', icon:'🦜', desc:'地图特效装饰', price:500, hot:true },
+      { id:'title_top', name:'孤岛之主', icon:'👑', desc:'最高荣誉称号', price:1000 },
+      { id:'frame_alt', name:'帆船副框', icon:'⛵', desc:'离岛回英纪念框', price:250 }
+    ]
+  },
+  qier: {
+    title: '骑鹅旅行记',
+    subtitle: '拇指人飞瑞典',
+    bgImage: '',
+    storageKey: 'qier_v1',
+    themeColors: ['#2a9d8f', '#e9c46a'],
+    scenes: [
+      { name:'变小之家', colors:['#264653','#2a9d8f','#e9c46a'], emojis:['🏠','🪑','🧚','🦢','📚','🌿'] },
+      { name:'斯科纳农场', colors:['#e9c46a','#f4a261','#264653'], emojis:['🌾','🐄','🐔','🦢','🌻','🍂'] },
+      { name:'中部森林湖', colors:['#2a9d8f','#264653','#a8dadc'], emojis:['🌲','🦊','🦌','🏞️','🌌','🪨'] },
+      { name:'拉普兰极光', colors:['#1d3557','#a8dadc','#06d6a0'], emojis:['❄️','🦌','🌌','⛺','🌟','🦉'] }
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'🦢','理解':'🦊','评鉴':'⚖️','创意':'🎨','价值':'🌟' },
+    npcName: { '知识':'家鹅莫顿','理解':'狐狸斯密尔','评鉴':'头雁阿卡','创意':'小精灵','价值':'尼尔斯本人' },
+    levels: [
+      { id:1, name:'走进拉格洛夫', scene:0, type:'normal', icon:'📖' },
+      { id:2, name:'变小开端', scene:0, type:'normal', icon:'🧚' },
+      { id:3, name:'家鹅起飞', scene:0, type:'boss', icon:'🦢' },
+      { id:4, name:'狐狸斯密尔', scene:1, type:'normal', icon:'🦊' },
+      { id:5, name:'头雁阿卡', scene:1, type:'normal', icon:'🦅' },
+      { id:6, name:'飞越斯科纳', scene:1, type:'boss', icon:'🌾' },
+      { id:7, name:'飞越中部森林', scene:2, type:'normal', icon:'🌲' },
+      { id:8, name:'拉普兰之北', scene:3, type:'normal', icon:'❄️' },
+      { id:9, name:'保护他人', scene:2, type:'boss', icon:'🛡️' },
+      { id:10, name:'回家路上', scene:3, type:'normal', icon:'🏠' },
+      { id:11, name:'变回原形', scene:3, type:'normal', icon:'👦' },
+      { id:12, name:'微观地图', scene:3, type:'boss', icon:'🌟' }
+    ],
+    shop: [
+      { id:'frame_goose', name:'白鹅金框', icon:'🦢', desc:'骑鹅旅行者头像金框', price:200, hot:true },
+      { id:'title_pilot', name:'拇指飞行员', icon:'🧚', desc:'微观视角称号', price:300 },
+      { id:'badge_hint', name:'雁羽提示', icon:'🪶', desc:'答案高亮提示×1', price:150, new:true },
+      { id:'skin_reindeer', name:'拉普兰驯鹿', icon:'🦌', desc:'地图特效装饰', price:500, hot:true },
+      { id:'title_top', name:'瑞典地理王', icon:'👑', desc:'最高荣誉称号', price:1000 },
+      { id:'frame_alt', name:'极光副框', icon:'🌌', desc:'拉普兰极光副框', price:250 }
+    ]
+  },
+  tangmu: {
+    title: '汤姆·索亚历险记',
+    subtitle: '童年最后一夏',
+    bgImage: '',
+    storageKey: 'tangmu_v1',
+    themeColors: ['#e76f51', '#264653'],
+    scenes: [
+      { name:'圣彼得堡小镇', colors:['#e9c46a','#f4a261','#264653'], emojis:['🏠','⛪','🌳','🪣','📚','🎨'] },
+      { name:'墓地之夜', colors:['#264653','#1d3557','#a8dadc'], emojis:['🌙','⚰️','🦉','💀','🩸','🔦'] },
+      { name:'杰克逊岛', colors:['#2a9d8f','#e9c46a','#264653'], emojis:['🏝️','🛶','🐟','🔥','🌊','🌴'] },
+      { name:'麦克道格山洞', colors:['#1d3557','#e76f51','#06d6a0'], emojis:['🕳️','💎','🦇','🔦','💰','🗝️'] }
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'🪣','理解':'🦉','评鉴':'⚖️','创意':'🎨','价值':'🌟' },
+    npcName: { '知识':'刷墙汤姆','理解':'夜枭哈克','评鉴':'法庭法官','创意':'画家贝姬','价值':'马克·吐温本人' },
+    levels: [
+      { id:1, name:'走进马克·吐温', scene:0, type:'normal', icon:'📖' },
+      { id:2, name:'刷围墙', scene:0, type:'normal', icon:'🪣' },
+      { id:3, name:'墓地之夜', scene:1, type:'boss', icon:'🌙' },
+      { id:4, name:'良心抉择', scene:1, type:'normal', icon:'⚖️' },
+      { id:5, name:'恋爱贝姬', scene:0, type:'normal', icon:'💌' },
+      { id:6, name:'杰克逊岛假死', scene:2, type:'boss', icon:'🛶' },
+      { id:7, name:'三个孩子', scene:0, type:'normal', icon:'👬' },
+      { id:8, name:'印江·乔', scene:1, type:'normal', icon:'🗡️' },
+      { id:9, name:'山洞历险', scene:3, type:'boss', icon:'🔦' },
+      { id:10, name:'宝藏归来', scene:3, type:'normal', icon:'💰' },
+      { id:11, name:'童年终曲', scene:0, type:'normal', icon:'🎓' },
+      { id:12, name:'最后一夏', scene:2, type:'boss', icon:'🌟' }
+    ],
+    shop: [
+      { id:'frame_fence', name:'白围墙金框', icon:'🪣', desc:'小镇头像金框', price:200, hot:true },
+      { id:'title_witness', name:'良心证人', icon:'⚖️', desc:'墓地之夜成长称号', price:300 },
+      { id:'badge_hint', name:'蜡烛提示', icon:'🕯️', desc:'答案高亮提示×1', price:150, new:true },
+      { id:'skin_raft', name:'木筏冒险', icon:'🛶', desc:'地图特效装饰', price:500, hot:true },
+      { id:'title_top', name:'最后一夏王', icon:'👑', desc:'最高荣誉称号', price:1000 },
+      { id:'frame_alt', name:'山洞副框', icon:'🕳️', desc:'山洞历险副框', price:250 }
+    ]
+  },
+  ailisi: {
+    title: '爱丽丝漫游奇境',
+    subtitle: '逻辑荒诞童话',
+    bgImage: '',
+    storageKey: 'ailisi_v1',
+    themeColors: ['#a663cc', '#e9c46a'],
+    scenes: [
+      { name:'兔子洞', colors:['#264653','#a663cc','#e9c46a'], emojis:['🐰','⏰','🕳️','🍪','🥤','🚪'] },
+      { name:'毛毛虫森林', colors:['#2a9d8f','#a663cc','#e9c46a'], emojis:['🍄','🐛','💨','🌿','🌸','🦋'] },
+      { name:'疯茶会', colors:['#e76f51','#a663cc','#264653'], emojis:['🎩','🐭','🫖','🍰','🐇','⏰'] },
+      { name:'王后槌球场', colors:['#e63946','#a663cc','#06d6a0'], emojis:['👑','🦩','🦔','♠️','♥️','⚔️'] }
+    ],
+    sceneBg: ['','','',''],
+    bossBg: { 3:'', 6:'', 9:'', 12:'' },
+    npcAvatar: { '知识':'🐰','理解':'🐛','评鉴':'⚖️','创意':'🎨','价值':'🌟' },
+    npcName: { '知识':'白兔子','理解':'蓝毛毛虫','评鉴':'柴郡猫','创意':'疯帽子','价值':'爱丽丝本人' },
+    levels: [
+      { id:1, name:'走进卡罗尔', scene:0, type:'normal', icon:'📖' },
+      { id:2, name:'兔子洞跌落', scene:0, type:'normal', icon:'🕳️' },
+      { id:3, name:'变大变小', scene:0, type:'boss', icon:'📏' },
+      { id:4, name:'毛毛虫的提问', scene:1, type:'normal', icon:'🐛' },
+      { id:5, name:'柴郡猫的微笑', scene:1, type:'normal', icon:'😺' },
+      { id:6, name:'疯茶会', scene:2, type:'boss', icon:'🎩' },
+      { id:7, name:'红王后的「砍头」', scene:3, type:'normal', icon:'👑' },
+      { id:8, name:'语言游戏', scene:1, type:'normal', icon:'🎭' },
+      { id:9, name:'法庭审判', scene:3, type:'boss', icon:'⚖️' },
+      { id:10, name:'醒来后的爱丽丝', scene:0, type:'normal', icon:'🌅' },
+      { id:11, name:'角色现实镜像', scene:2, type:'normal', icon:'🪞' },
+      { id:12, name:'成长就是失去理所当然', scene:3, type:'boss', icon:'🌟' }
+    ],
+    shop: [
+      { id:'frame_rabbit', name:'白兔金框', icon:'🐰', desc:'兔子洞头像金框', price:200, hot:true },
+      { id:'title_questioner', name:'清醒提问者', icon:'😺', desc:'柴郡猫成长称号', price:300 },
+      { id:'badge_hint', name:'蘑菇提示', icon:'🍄', desc:'答案高亮提示×1', price:150, new:true },
+      { id:'skin_teaparty', name:'疯茶会装饰', icon:'🫖', desc:'地图特效装饰', price:500, hot:true },
+      { id:'title_top', name:'奇境质疑王', icon:'👑', desc:'最高荣誉称号', price:1000 },
+      { id:'frame_alt', name:'纸牌副框', icon:'🃏', desc:'法庭纸牌副框', price:250 }
+    ]
+  },
+};
+
+// ============ V12 · 书目专属背景图生成器（无需外部图片，按 scenes.colors+emojis 即时合成）============
+function _bkSeed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);h^=h>>>16;return ((h>>>0)/0xffffffff);};}
+function _bkSvgScene(scene, opts){
+  const w=opts.w||1600,h=opts.h||900,boss=!!opts.boss,levelName=opts.levelName||'';
+  const c=scene.colors||['#1a0a2e','#3d2b0a','#6b4c11'];
+  const c0=c[0],c1=c[1]||c[0],c2=c[2]||c[1]||c[0];
+  const emojis=(scene.emojis&&scene.emojis.length?scene.emojis:['✨','⭐','☁️']);
+  const rand=_bkSeed(scene.name+'|'+(boss?'B':'S')+'|'+levelName);
+  let glows='';
+  for(let i=0;i<4;i++){
+    const cx=Math.round(rand()*w),cy=Math.round(rand()*h),rr=Math.round(120+rand()*260);
+    glows+=`<circle cx="${cx}" cy="${cy}" r="${rr}" fill="url(#g${i})" opacity="${(0.25+rand()*0.25).toFixed(2)}"/>`;
+  }
+  let nodes='';
+  const N=boss?10:18;
+  for(let i=0;i<N;i++){
+    const e=emojis[i%emojis.length];
+    const x=30+Math.round(rand()*(w-60));
+    const y=70+Math.round(rand()*(h-160));
+    const sz=Math.round((boss?42:36)+rand()*(boss?44:50));
+    const op=(0.40+rand()*0.45).toFixed(2);
+    const rot=Math.round(-12+rand()*24);
+    nodes+=`<text x="${x}" y="${y}" font-size="${sz}" opacity="${op}" transform="rotate(${rot} ${x} ${y})">${e}</text>`;
+  }
+  const bossOverlay=boss?`<rect width="${w}" height="${h}" fill="rgba(180,30,30,0.18)"/>
+    <radialGradient id="bossGlow"><stop offset="0%" stop-color="#FF4757" stop-opacity="0.55"/><stop offset="100%" stop-color="#FF4757" stop-opacity="0"/></radialGradient>
+    <circle cx="${Math.round(w/2)}" cy="${Math.round(h*0.45)}" r="${Math.round(Math.min(w,h)*0.45)}" fill="url(#bossGlow)"/>
+    <text x="${Math.round(w/2)}" y="${Math.round(h*0.18)}" text-anchor="middle" font-size="${boss?64:48}" font-weight="900" fill="#FFD700" stroke="#7c1d1d" stroke-width="2" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" letter-spacing="6">⚔ BOSS ⚔</text>`:'';
+  const titleSize=Math.round(w/22);
+  const subSize=Math.round(w/40);
+  const sceneLabel=`<g>
+    <rect x="${Math.round(w*0.04)}" y="${h-Math.round(titleSize*2.2)}" rx="14" ry="14" width="${Math.round(w*0.42)}" height="${Math.round(titleSize*1.6)}" fill="rgba(0,0,0,0.45)"/>
+    <text x="${Math.round(w*0.07)}" y="${h-Math.round(titleSize*0.9)}" font-size="${titleSize}" font-weight="700" fill="#fff" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">${scene.name}${levelName?'·'+levelName:''}</text>
+  </g>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${c0}"/>
+        <stop offset="55%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+      <radialGradient id="g0"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+      <radialGradient id="g1"><stop offset="0%" stop-color="${c1}" stop-opacity="0.9"/><stop offset="100%" stop-color="${c1}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="g2"><stop offset="0%" stop-color="${c2}" stop-opacity="0.9"/><stop offset="100%" stop-color="${c2}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="g3"><stop offset="0%" stop-color="#FFD700" stop-opacity="0.55"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="${w}" height="${h}" fill="url(#bg)"/>
+    ${glows}
+    ${nodes}
+    ${bossOverlay}
+    ${sceneLabel}
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function _bkSvgMap(book, w, h){
+  const scenes=book.scenes||[];
+  const colors=(book.themeColors||['#2B7DE9','#7C3AED']);
+  const rand=_bkSeed('map-'+book.title);
+  // 4 scenes 横向并排 + 顶部标题
+  let cols='';
+  scenes.forEach((s,i)=>{
+    const cx=(w/scenes.length)*i+w/(scenes.length*2);
+    const sc=s.colors||[colors[0],colors[1]||colors[0],colors[1]||colors[0]];
+    cols+=`<g>
+      <rect x="${(w/scenes.length)*i}" y="0" width="${w/scenes.length}" height="${h}" fill="url(#bgM${i})"/>
+      ${(s.emojis||[]).slice(0,5).map((e,k)=>{
+        const x=cx+(rand()-0.5)*(w/scenes.length*0.7);
+        const y=120+rand()*(h-200);
+        const sz=Math.round(40+rand()*48);
+        return `<text x="${Math.round(x)}" y="${Math.round(y)}" font-size="${sz}" opacity="${(0.45+rand()*0.4).toFixed(2)}">${e}</text>`;
+      }).join('')}
+      <text x="${Math.round(cx)}" y="${h-50}" text-anchor="middle" font-size="${Math.round(w/40)}" font-weight="700" fill="#fff" opacity="0.95" font-family="-apple-system,'PingFang SC',sans-serif">${s.name}</text>
+    </g>`;
+  });
+  const grads=scenes.map((s,i)=>{
+    const sc=s.colors||[colors[0],colors[1]||colors[0],colors[1]||colors[0]];
+    return `<linearGradient id="bgM${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${sc[0]}"/><stop offset="100%" stop-color="${sc[2]||sc[1]||sc[0]}"/></linearGradient>`;
+  }).join('');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice">
+    <defs>${grads}<linearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(0,0,0,0.55)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></linearGradient></defs>
+    ${cols}
+    <rect width="${w}" height="160" fill="url(#topGrad)"/>
+    <text x="${Math.round(w/2)}" y="80" text-anchor="middle" font-size="${Math.round(w/22)}" font-weight="800" fill="#FFD700" stroke="rgba(0,0,0,0.6)" stroke-width="2" font-family="-apple-system,'PingFang SC',sans-serif" letter-spacing="8">${book.title}·${book.subtitle||'阅读大冒险'}</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
+// 当前书目配置（横版时自动替换为横版图片路径）
+const _rawCfg = BOOK_CONFIG[BOOK_ID] || BOOK_CONFIG.xiyou;
+const _landCfg = LANDSCAPE_ASSETS[BOOK_ID];
+const isLandscapeGlobal = window.innerWidth >= 1024;
+const BKCFG = isLandscapeGlobal && _landCfg ? Object.assign({}, _rawCfg, {
+  bgImage: _landCfg.bgImage || _rawCfg.bgImage,
+  sceneBg: _landCfg.sceneBg || _rawCfg.sceneBg,
+  bossBg: _landCfg.bossBg || _rawCfg.bossBg
+}) : _rawCfg;
+
+// V12 强制覆盖：所有书目用即时生成的专属 SVG（含 scene 名/emoji/Boss 红光等），不再共用西游记 jpg
+// 例外：西游记本身有完整的真实美术资源（主图 + 4 scene + 2 boss jpg），保留原图不覆盖
+(function overrideBookBg(){
+  if(BOOK_ID === 'xiyou') return;
+  const W=isLandscapeGlobal?1600:900, H=isLandscapeGlobal?900:1200;
+  const scenes=BKCFG.scenes||[];
+  BKCFG.bgImage = _bkSvgMap(BKCFG, W, H);
+  BKCFG.sceneBg = scenes.map(s => _bkSvgScene(s, {w:W,h:H,boss:false}));
+  // bossBg：按 levels 中 type==='boss' 的关卡号映射其 scene
+  const newBossBg={};
+  (BKCFG.levels||[]).forEach(l => {
+    if(l.type==='boss'){
+      const sc=scenes[l.scene]||scenes[0]||{name:'',colors:['#1a0a0a','#3d0a0a','#6b1a1a'],emojis:['🔥','⚔️']};
+      newBossBg[l.id]=_bkSvgScene(sc, {w:W,h:H,boss:true,levelName:l.name});
+    }
+  });
+  BKCFG.bossBg = newBossBg;
+})();
+
+const CFG={
+  baseScore:10, speedBonus:8, wrongPenalty:-3,
+  comboMult:[1,1.5,2,2.5,3],
+  timerNormal:18, timerBoss:28,
+  heartsNormal:4, heartsBoss:6
+};
+
+// ===== 从书目配置中提取 =====
+const SCENE_BG = BKCFG.sceneBg;
+const BOSS_BG = BKCFG.bossBg;
+
+// ===== 预加载关键背景图（避免切场景白屏） =====
+(function preloadBgs(){
+  const urls = [BKCFG.bgImage, ...BKCFG.sceneBg, ...Object.values(BKCFG.bossBg)];
+  urls.forEach(src=>{if(src){const img=new Image();img.src=src;}});
+})();
+const NPC_AVATAR = BKCFG.npcAvatar;
+const NPC_NAME = BKCFG.npcName;
+const OPT_EMOJIS=[
+  ['🍑','🌸','🍃','✨'],['💎','🐚','🫧','⭐'],['☁️','🌙','🏯','🎆'],
+  ['🏔️','🌅','🐴','🍂'],['🔥','👑','⚡','🌀'],['💀','👻','🦇','🌙'],
+  ['🤝','🙏','📜','🕯️'],['🌊','🐉','💧','🌈'],['👸','💝','🏰','🎀']
+];
+const SCENES = BKCFG.scenes;
+const LEVELS = BKCFG.levels;
+const SHOP = BKCFG.shop;
+
+// ===== 节点位置(蜿蜒布局) — y值按容器宽度缩放 =====
+function getContainerW(){return Math.min(document.getElementById('root').offsetWidth || 430, 800)}
+const BASE_NODE_Y=[120,210,300,390,480,580,680,770,860,950,1050,1160];
+const NODE_X=[50,75,30,65,35,55,25,70,40,65,30,50];
+function getNodePos(){
+  const w = getContainerW();
+  const scale = w / 430;
+  return NODE_X.map((x,i)=>({x, y: Math.round(BASE_NODE_Y[i] * scale)}));
+}
+const NODE_POS = getNodePos();
+
+// ===== 题库加载（按书目） =====
+// 题库加载（外部JS动态引入，需延迟获取）
+let QBANK = {};
+function ensureQBank(){
+  if(Object.keys(QBANK).length > 0) return true;
+  if(typeof XIYOU_QBANK !== 'undefined') QBANK = XIYOU_QBANK;
+  else if(typeof SHUIHU_QBANK !== 'undefined') QBANK = SHUIHU_QBANK;
+  else if(typeof SANGUO_QBANK !== 'undefined') QBANK = SANGUO_QBANK;
+  else if(typeof HONGLOU_QBANK !== 'undefined') QBANK = HONGLOU_QBANK;
+  else if(typeof SHENHUA_QBANK !== 'undefined') QBANK = SHENHUA_QBANK;
+  else if(window.QUIZ_DATA && Array.isArray(window.QUIZ_DATA.levels)){
+    window.QUIZ_DATA.levels.forEach(function(lv){
+      QBANK[lv.id] = (lv.questions||[]).map(function(q){
+        var t = (q.type === 'boss') ? 'choice' : (q.type || 'choice');
+        return {
+          dim: q.dim,
+          type: t,
+          stem: (q.q != null ? q.q : q.stem),
+          opts: (q.options != null ? q.options : q.opts),
+          ans: (q.answer != null ? q.answer : q.ans),
+          exp: (q.explain != null ? q.explain : q.exp)
+        };
+      });
+    });
+  }
+  return Object.keys(QBANK).length > 0;
+}
+// 立即尝试一次
+ensureQBank();
+
+// ===== 状态 =====// ===== 状态 =====
+let S=load();
+function load(){try{const d=localStorage.getItem(BKCFG.storageKey);if(d)return JSON.parse(d)}catch(e){}
+  return{coins:0,stars:0,levels:{},owned:[],equipped:{},combo:0,maxCombo:0,streak:1,lastPlay:null,dimS:{},dimT:{}}}
+function save(){S.lastPlay=new Date().toDateString();localStorage.setItem(BKCFG.storageKey,JSON.stringify(S));
+  // ===== v11 桥接：把进度回吐父窗口（v11.html）=====
+  try {
+    if (window.parent && window.parent !== window) {
+      const completedCount = Object.values(S.levels||{}).filter(l=>l.done).length;
+      const totalLevels = (typeof LEVELS !== 'undefined' && LEVELS) ? LEVELS.length : 0;
+      window.parent.postMessage({
+        type:'xes-quiz-progress',
+        bookId: BOOK_ID,
+        coins: S.coins||0,
+        stars: S.stars||0,
+        maxCombo: S.maxCombo||0,
+        completedLevels: completedCount,
+        totalLevels: totalLevels,
+        lastPlay: S.lastPlay,
+        levelsDetail: S.levels||{}
+      }, '*');
+    }
+  } catch(e){}
+}
+
+// ===== 视图切换 =====
+function showV(id){['map-view','quiz-view','result-view','shop-view'].forEach(v=>{
+  document.getElementById(v).classList.toggle('hidden',v!==id)})}
+
+// ===== 地图渲染 =====
+function renderMap(){
+  const isLandscape = window.innerWidth >= 1024;
+  const scene=getScene();
+  const sc=SCENES[scene];
+  const completed=Object.values(S.levels).filter(l=>l.done).length;
+
+  // 背景图层（Gemini生成的西游记图片）
+  let bgLayer=`
+    <div class="map-bg-layer">
+      <img class="map-bg-img" loading="lazy" src="${BKCFG.bgImage}" alt="${BKCFG.title}" onerror="this.style.display='none'">
+      <div class="map-bg-mask"></div>
+    </div>`;
+
+  // SVG路径连接线（响应式宽高）
+  const CW = getContainerW();
+  const positions = getNodePos();
+  const mapH = positions[positions.length-1].y + 200;
+  let pathD='';
+  positions.forEach((p,i)=>{
+    const x=p.x/100*CW, y=p.y;
+    if(i===0) pathD+=`M${x},${y}`;
+    else{
+      const prev=positions[i-1];
+      const px=prev.x/100*CW, py=prev.y;
+      const cy1=py+(y-py)*0.5, cy2=py+(y-py)*0.5;
+      pathD+=` C${px},${cy1} ${x},${cy2} ${x},${y}`;
+    }
+  });
+
+  // 横版模式不渲染竖向SVG路径
+  let pathSvg = '';
+  if(!isLandscape){
+    pathSvg=`<svg class="path-svg" viewBox="0 0 ${CW} ${mapH}" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="path-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(255,107,53,0.6)"/>
+          <stop offset="100%" stop-color="rgba(168,85,247,0.4)"/>
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <path d="${pathD}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6" stroke-linecap="round"/>
+      <path d="${pathD}" fill="none" stroke="url(#path-grad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 6" filter="url(#glow)">
+        <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="2s" repeatCount="indefinite"/>
+      </path>
+    </svg>`;
+  }
+
+  // 节点
+  let nodesHtml='';
+  LEVELS.forEach((lv,i)=>{
+    const ls=S.levels[lv.id]||{};
+    const unlocked=i===0||(S.levels[LEVELS[i-1].id]&&S.levels[LEVELS[i-1].id].done);
+    let cls='locked';
+    if(ls.done) cls='completed';
+    else if(unlocked) cls='unlocked';
+    if(lv.type==='boss'&&cls!=='locked') cls+=' boss';
+
+    const pos=positions[i];
+    const stars=ls.stars||0;
+    const starsHtml=ls.done?'<div class="node-stars">'+'\u2B50'.repeat(stars)+'<span class="empty">'+'\u2B50'.repeat(3-stars)+'</span></div>':'';
+
+    // 横版模式下不设 left/top（CSS flex 控制），竖版仍用绝对定位
+    const posStyle = isLandscape ? '' : `style="left:calc(${pos.x}% - ${lv.type==='boss'?35:30}px);top:${pos.y}px"`;
+
+    nodesHtml+=`<div class="node-wrapper ${cls}" ${posStyle} onclick="clickNode(${lv.id},${unlocked||ls.done?1:0})">
+      <div class="node-circle">${ls.done?'\u2705':(cls.includes('locked')?'\u{1F512}':lv.icon)}</div>
+      <div class="node-label">${lv.name}</div>${starsHtml}
+    </div>`;
+  });
+
+  // 装饰（横版模式下不渲染，CSS也隐藏了）
+  let decoHtml='';
+  if(!isLandscape){
+    for(let i=0;i<12;i++){
+      const emoji=sc.emojis[i%sc.emojis.length];
+      const x=10+Math.random()*80, y=80+Math.random()*1100;
+      const delay=(Math.random()*3).toFixed(1);
+      const size=14+Math.floor(Math.random()*12);
+      decoHtml+=`<div class="deco" style="left:${x}%;top:${y}px;font-size:${size}px;animation-delay:${delay}s;opacity:${(0.2+Math.random()*0.3).toFixed(2)}">${emoji}</div>`;
+    }
+  }
+
+  const title=S.equipped.title?SHOP.find(x=>x.id===S.equipped.title)?.name:'阅读冒险家';
+
+  // 商城Tab热门商品
+  const hotItems=SHOP.filter(x=>x.hot||x.new).slice(0,4);
+  let teaserHtml=hotItems.map(it=>{
+    const owned=S.owned.includes(it.id);
+    return `<div class="st-item ${it.hot?'hot':''} ${it.new?'new':''}" onclick="buy('${it.id}')" style="position:relative">
+      <span class="sti-icon">${it.icon}</span>
+      <span class="sti-info">
+        <span class="sti-name">${owned?'✅ 已拥有':it.name}</span>
+        <span class="sti-price">${owned?'已兑换':'\u{1FA99} '+it.price}</span>
+      </span>
+      ${it.hot?'<span class="st-hot-tag">热卖</span>':''}
+      ${it.new?'<span class="st-hot-tag" style="background:linear-gradient(135deg,#A855F7,#C084FC)">新品</span>':''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('map-view').innerHTML=`
+    ${bgLayer}
+    <div class="map-scroll">
+      <div class="hud">
+        <div class="hud-left">
+          <div class="hud-avatar">🐒</div>
+          <div><div class="hud-name">小读者</div><div class="hud-title">${title}</div></div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-pill gold">🪙 ${S.coins}</div>
+          <div class="hud-pill purple">⭐ ${S.stars}</div>
+        </div>
+      </div>
+      <div class="shop-teaser">${teaserHtml}</div>
+      <div class="map-hero">
+        <h1>📖 ${BKCFG.title} · 阅读闯关</h1>
+        <p>完成 ${completed}/12 关 · 中国青少年阅读素养框架</p>
+        <div class="streak-badge">🔥 连续学习第 ${S.streak} 天</div>
+      </div>
+      <div class="map-content" ${isLandscape?'':'style="min-height:'+(mapH+100)+'px"'}>
+        ${pathSvg}
+        ${decoHtml}
+        <div class="nodes-container">${nodesHtml}</div>
+      </div>
+    </div>
+    <button class="shop-fab" onclick="openShop()">🛒</button>`;
+  showV('map-view');
+}
+
+function getScene(){let mx=0;LEVELS.forEach((l,i)=>{if(S.levels[l.id]&&S.levels[l.id].done)mx=i});return LEVELS[Math.min(mx,11)].scene}
+function clickNode(id,ok){if(!ok)return toast('🔒 通过前一关才能解锁哦！');startLevel(id)}
+
+// ===== 答题引擎 =====
+let CUR={lv:null,qs:[],idx:0,hearts:0,combo:0,score:0,correct:0,timer:null,timeLeft:0};
+let matchSt={sel:null,pairs:[]};
+
+function startLevel(id){
+  ensureQBank();
+  if(!QBANK[id]){
+    toast('⏳ 题库加载中，请稍后再试...');
+    // 延迟重试
+    setTimeout(function(){ensureQBank();if(QBANK[id])startLevel(id);else toast('❌ 题库加载失败，请刷新页面');},800);
+    return;
+  }
+  const lv=LEVELS.find(l=>l.id===id);
+  CUR={lv,qs:[...QBANK[id]],idx:0,hearts:lv.type==='boss'?CFG.heartsBoss:CFG.heartsNormal,combo:0,score:0,correct:0,timer:null,timeLeft:0};
+  matchSt={sel:null,pairs:[]};
+  renderQ();showV('quiz-view');
+}
+
+function renderQ(){
+  const q=CUR.qs[CUR.idx];
+  const isBoss=CUR.lv.type==='boss';
+  const total=CUR.qs.length;
+  const pct=(CUR.idx/total*100).toFixed(1);
+  // 背景图（Boss关用特殊背景，普通关用场景背景）
+  let bgSrc=BOSS_BG[CUR.lv.id]||SCENE_BG[CUR.lv.scene];
+  let qBg=`<div class="quiz-bg-layer">
+    <img class="quiz-bg-img" src="${bgSrc}" alt="" onerror="this.style.opacity=0">
+    <div class="quiz-bg-mask"></div>
+  </div>`;
+
+  let heartsH='';
+  const maxH=isBoss?CFG.heartsBoss:CFG.heartsNormal;
+  for(let i=0;i<maxH;i++) heartsH+=`<span class="heart-icon ${i>=CUR.hearts?'lost':''}">\u2764\uFE0F</span>`;
+  const comboTxt=CUR.combo>=2?`\u{1F525}\u00D7${CFG.comboMult[Math.min(CUR.combo-1,4)]}`:'';
+
+  // NPC头像（按维度分配）
+  const npcEmoji=NPC_AVATAR[q.dim]||'\u{1F435}';
+  const npcName=NPC_NAME[q.dim]||'\u795E\u79D8\u4EBA';
+
+  let body='';
+  if(q.type==='choice') body=mkChoice(q,CUR.lv.id);
+  else if(q.type==='drag') body=mkDrag(q);
+  else if(q.type==='match') body=mkMatch(q);
+
+  document.getElementById('quiz-view').innerHTML=`
+    ${qBg}
+    <div class="quiz-hud">
+      <button class="quiz-back-btn" onclick="exitQ()">\u2190</button>
+      <span class="quiz-title">${CUR.lv.icon} ${CUR.lv.name}</span>
+      <span class="quiz-score-pill">🪙 +${CUR.score}</span>
+    </div>
+    <div class="quiz-stats">
+      <div class="hearts-bar">${heartsH}</div>
+      <span class="combo-tag ${CUR.combo>=2?'show':''}">${comboTxt}</span>
+      <span class="q-num">${CUR.idx+1}/${total}</span>
+    </div>
+    <div class="quiz-bars">
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="timer-track"><div class="timer-fill" id="tmr" style="width:100%"></div></div>
+    </div>
+    <div class="quiz-body">
+      <div class="q-npc-area">
+        <div class="q-npc-avatar">${npcEmoji}</div>
+        <div class="q-bubble">
+          <span class="q-dim-badge dim-${q.dim}">${dimIcon(q.dim)} ${q.dim}</span>
+          <div class="q-stem">${q.stem}</div>
+        </div>
+      </div>
+      ${body}
+      <div class="explain-area" id="expArea"></div>
+    </div>
+    <button class="next-btn" id="nxtBtn" onclick="nextQ()">\u{1F449} 继续前进</button>`;
+
+  startTimer(isBoss?CFG.timerBoss:CFG.timerNormal);
+}
+
+function dimIcon(d){return{'\u77E5\u8BC6':'\u{1F4D6}','\u7406\u89E3':'\u{1F9E0}','\u8BC4\u9274':'\u2696\uFE0F','\u521B\u610F':'\u{1F3A8}','\u4EF7\u503C':'\u{1F31F}'}[d]||'\u2728'}
+
+// 选择题 — 游戏化卡片网格（2x2 emoji卡片）
+function mkChoice(q,lvId){
+  const emojis=OPT_EMOJIS[(lvId-1)%OPT_EMOJIS.length];
+  return `<div class="opts-list">${q.opts.map((o,i)=>`<div class="opt-btn" id="op${i}" onclick="pickOpt(${i})">
+    <span class="opt-emoji">${emojis[i%emojis.length]}</span>
+    <span class="opt-text">${o}</span>
+  </div>`).join('')}</div>`;
+}
+function pickOpt(i){
+  clearInterval(CUR.timer);
+  const q=CUR.qs[CUR.idx];
+  document.querySelectorAll('.opt-btn').forEach(e=>e.classList.add('disabled'));
+  if(i===q.ans){document.getElementById('op'+i).classList.add('correct');onCorrect(q)}
+  else{document.getElementById('op'+i).classList.add('wrong');document.getElementById('op'+q.ans).classList.add('reveal-correct');onWrong(q)}
+}
+
+// 拖拽排序
+function mkDrag(q){
+  window._dItems=q.items.map((t,i)=>({t,i}));
+  // 打乱
+  for(let i=window._dItems.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[window._dItems[i],window._dItems[j]]=[window._dItems[j],window._dItems[i]]}
+  window._dAns=q.ans;
+  return `<div class="drag-zone" id="dragZ">${window._dItems.map((d,i)=>`<div class="drag-row" id="dr${i}">
+    <span class="drag-idx">${i+1}</span><span class="drag-txt">${d.t}</span>
+    <span class="drag-arrows"><span onclick="moveItem(${i},-1)">\u25B2</span><span onclick="moveItem(${i},1)">\u25BC</span></span>
+  </div>`).join('')}<button class="submit-btn cyan" onclick="submitDrag()">\u2705 确认顺序</button></div>`;
+}
+function moveItem(i,dir){
+  const j=i+dir;if(j<0||j>=window._dItems.length)return;
+  [window._dItems[i],window._dItems[j]]=[window._dItems[j],window._dItems[i]];
+  refreshDrag();
+}
+function refreshDrag(){
+  window._dItems.forEach((d,i)=>{
+    const el=document.getElementById('dr'+i);
+    if(el){el.querySelector('.drag-idx').textContent=i+1;el.querySelector('.drag-txt').textContent=d.t}
+  });
+}
+function submitDrag(){
+  clearInterval(CUR.timer);
+  const q=CUR.qs[CUR.idx];
+  const user=window._dItems.map(d=>d.i);
+  if(JSON.stringify(user)===JSON.stringify(window._dAns)) onCorrect(q);else onWrong(q);
+}
+
+// 连线配对
+function mkMatch(q){
+  matchSt={sel:null,pairs:[]};window._mQ=q;
+  return `<div class="match-zone">
+    <div class="match-col" id="mcL">${q.left.map((t,i)=>`<div class="match-pill" id="ml${i}" onclick="mSel('l',${i})">${t}</div>`).join('')}</div>
+    <div class="match-col" id="mcR">${q.right.map((t,i)=>`<div class="match-pill" id="mr${i}" onclick="mSel('r',${i})">${t}</div>`).join('')}</div>
+  </div><button class="submit-btn purple" id="mSub" style="display:none" onclick="submitMatch()">\u2705 确认配对</button>`;
+}
+function mSel(side,i){
+  const el=document.getElementById((side==='l'?'ml':'mr')+i);
+  if(el.classList.contains('paired'))return;
+  if(side==='l'){
+    document.querySelectorAll('#mcL .match-pill').forEach(e=>e.classList.remove('selected'));
+    el.classList.add('selected');matchSt.sel=i;
+  }else{
+    if(matchSt.sel===null)return toast('\u{1F449} \u5148\u70B9\u5DE6\u8FB9');
+    matchSt.pairs.push([matchSt.sel,i]);
+    document.getElementById('ml'+matchSt.sel).classList.add('paired');
+    el.classList.add('paired');
+    document.querySelectorAll('#mcL .match-pill').forEach(e=>e.classList.remove('selected'));
+    matchSt.sel=null;
+    if(matchSt.pairs.length===window._mQ.left.length) document.getElementById('mSub').style.display='block';
+  }
+}
+function submitMatch(){
+  clearInterval(CUR.timer);
+  const q=window._mQ;
+  const ok=matchSt.pairs.every(p=>q.ans.some(a=>a[0]===p[0]&&a[1]===p[1]));
+  if(ok) onCorrect(q);else onWrong(q);
+}
+
+// 计时器
+function startTimer(s){
+  clearInterval(CUR.timer);CUR.timeLeft=s;
+  const el=document.getElementById('tmr');if(!el)return;
+  CUR.timer=setInterval(()=>{
+    CUR.timeLeft-=0.1;
+    if(el)el.style.width=(CUR.timeLeft/s*100)+'%';
+    if(CUR.timeLeft<=0){clearInterval(CUR.timer);onTimeout()}
+  },100);
+}
+function onTimeout(){const q=CUR.qs[CUR.idx];onWrong(q)}
+
+// ===== 答对/答错 =====
+function onCorrect(q){
+  CUR.combo++;if(CUR.combo>S.maxCombo)S.maxCombo=CUR.combo;
+  const mult=CFG.comboMult[Math.min(CUR.combo-1,4)];
+  const speed=CUR.timeLeft>8?CFG.speedBonus:0;
+  const pts=Math.round((CFG.baseScore+speed)*mult);
+  CUR.score+=pts;CUR.correct++;
+  S.dimS[q.dim]=(S.dimS[q.dim]||0)+1;S.dimT[q.dim]=(S.dimT[q.dim]||0)+1;
+
+  showFB(true,pts);
+  spawnCoins(2+Math.min(CUR.combo,4));
+  if(CUR.combo>=3){spawnConfetti();showComboBurst(CUR.combo)}
+  showExp(q.exp,true);
+  document.getElementById('nxtBtn').classList.add('show');
+}
+function onWrong(q){
+  CUR.combo=0;CUR.hearts--;
+  CUR.score=Math.max(0,CUR.score+CFG.wrongPenalty);
+  S.dimT[q.dim]=(S.dimT[q.dim]||0)+1;
+  showFB(false,CFG.wrongPenalty);
+  showExp(q.exp,false);
+  if(CUR.hearts<=0){setTimeout(()=>finishLv(false),1200);return}
+  document.getElementById('nxtBtn').classList.add('show');
+}
+
+// ===== 反馈动效(Candy Crush风格) =====
+function showFB(ok,pts){
+  const fb=document.getElementById('feedback');
+  const emojis=ok?['🎉','✨','🌟','💫','🎊']:['😅','💪','🤔','📚'];
+  const e=emojis[Math.floor(Math.random()*emojis.length)];
+  const words=ok?['太棒了！','答对啦！','厉害！','正确！✓','真聪明！']:['没关系~','加油哦！','再想想！','别灰心！'];
+  const w=words[Math.floor(Math.random()*words.length)];
+  fb.innerHTML=`<div class="fb-emoji">${e}</div><div class="fb-text" style="color:${ok?'#4ADE80':'#FCA5A5'}">${w}</div><div class="fb-score" style="color:${ok?'var(--gold)':'var(--red)'}">${pts>0?'+'+pts:pts} 积分</div>`;
+  fb.classList.add('show');
+  setTimeout(()=>fb.classList.remove('show'),1000);
+}
+function spawnCoins(n){
+  for(let i=0;i<n;i++) setTimeout(()=>{
+    const c=document.createElement('div');c.className='coin-particle';c.textContent='🪙';
+    c.style.left=(25+Math.random()*50)+'%';c.style.top='45%';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),900);
+  },i*80);
+}
+function spawnConfetti(){
+  const colors=['#FF6B35','#FFD700','#4ADE80','#A855F7','#60A5FA','#F472B6','#22D3EE'];
+  for(let i=0;i<24;i++) setTimeout(()=>{
+    const c=document.createElement('div');c.className='confetti-piece';
+    c.style.left=Math.random()*100+'%';c.style.top='-5px';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.width=(5+Math.random()*5)+'px';c.style.height=(5+Math.random()*5)+'px';
+    c.style.animationDuration=(1+Math.random()*0.8)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),1800);
+  },i*40);
+}
+function showComboBurst(n){
+  const b=document.createElement('div');b.className='combo-burst';
+  b.textContent=`${n}连击！\u{1F525}`;
+  document.body.appendChild(b);setTimeout(()=>b.remove(),900);
+}
+function showExp(txt,ok){
+  const el=document.getElementById('expArea');if(!el)return;
+  el.className='explain-area show '+(ok?'good':'bad');
+  el.innerHTML='\u{1F4A1} '+txt;
+}
+function exitQ(){clearInterval(CUR.timer);renderMap()}
+
+// ===== 下一题 =====
+function nextQ(){
+  CUR.idx++;
+  if(CUR.idx>=CUR.qs.length) finishLv(true);
+  else{matchSt={sel:null,pairs:[]};renderQ()}
+}
+
+// ===== 结算 =====
+function finishLv(passed){
+  clearInterval(CUR.timer);
+  const total=CUR.qs.length;
+  const acc=CUR.correct/total;
+  let stars=0;if(acc>=1)stars=3;else if(acc>=0.8)stars=2;else if(acc>=0.6)stars=1;
+
+  if(passed||acc>=0.6){
+    const prev=S.levels[CUR.lv.id]||{};
+    S.levels[CUR.lv.id]={done:true,stars:Math.max(prev.stars||0,stars),score:Math.max(prev.score||0,CUR.score)};
+  }
+  S.coins+=CUR.score;
+  const bonus=(stars>=2?25:0)+(S.maxCombo>=3?15:0);
+  S.coins+=bonus;
+  S.stars=Object.values(S.levels).reduce((s,l)=>s+(l.stars||0),0);
+  save();
+
+  const rewards=[];
+  if(CUR.score>0)rewards.push('🪙 +'+CUR.score+' 积分');
+  if(stars>=2)rewards.push('✨ 优秀奖励 +25');
+  if(S.maxCombo>=3)rewards.push('\u{1F525} 连击王 +15');
+
+  document.getElementById('result-view').innerHTML=`
+    <div class="res-emoji">${passed?'\u{1F3C6}':'\u{1F4AA}'}</div>
+    <div class="res-title">${passed?'闯关成功！':'再来一次！'}</div>
+    <div class="res-sub">${CUR.lv.icon} ${CUR.lv.name}</div>
+    <div class="res-stars">${'\u2B50'.repeat(stars)}${'<span style="opacity:0.2">\u2B50</span>'.repeat(3-stars)}</div>
+    <div class="res-grid">
+      <div class="res-cell"><div class="rv">${Math.round(acc*100)}%</div><div class="rl">正确率</div></div>
+      <div class="res-cell"><div class="rv">${CUR.score}</div><div class="rl">获得积分</div></div>
+      <div class="res-cell"><div class="rv">${S.maxCombo}</div><div class="rl">最高连击</div></div>
+    </div>
+    ${rewards.length?`<div class="res-rewards"><h4>\u{1F381} 获得奖励</h4><div class="rw-list">${rewards.map(r=>`<span class="rw-tag">${r}</span>`).join('')}</div></div>`:''}
+    <div class="res-btns">
+      ${passed?`<button class="btn-fire" onclick="goNext()">继续冒险 \u{1F680}</button>`:`<button class="btn-fire" onclick="startLevel(${CUR.lv.id})">再试一次 \u{1F504}</button>`}
+      <button class="btn-dim" onclick="renderMap()">返回地图</button>
+    </div>`;
+  showV('result-view');
+  if(passed)spawnConfetti();
+}
+function goNext(){
+  const idx=LEVELS.findIndex(l=>l.id===CUR.lv.id)+1;
+  if(idx<LEVELS.length)startLevel(LEVELS[idx].id);else{renderMap();toast('\u{1F389} 恭喜通关！全部关卡完成！')}
+}
+
+// ===== 商城 =====
+function openShop(){
+  const titlst=['头像框','称号','道具','特效'];
+  let shopHtml='';
+  // 按类别分组展示
+  const groups={};
+  SHOP.forEach(it=>{
+    const g=it.id.split('_')[0];
+    if(!groups[g])groups[g]=[];
+    groups[g].push(it);
+  });
+  Object.entries(groups).forEach(([g,items])=>{
+    const grpName={frame:'头像框',title:'称号',badge:'道具',skin:'特效'}[g]||'其他';
+    const grpIcon={frame:'🖼️',title:'👑',badge:'🎒',skin:'✨'}[g]||'📦';
+    shopHtml+=`<div style="padding:16px 16px 4px;display:flex;align-items:center;gap:6px"><span style="font-size:16px">${grpIcon}</span><span style="font-size:13px;font-weight:700">${grpName}</span></div>`;
+    shopHtml+=`<div class="shop-grid">${items.map(it=>{
+      const owned=S.owned.includes(it.id);
+      return`<div class="shop-card ${owned?'owned':''}" onclick="${owned?'':`buy('${it.id}')`}" style="position:relative">
+        ${it.hot?'<span class="st-hot-tag">热卖</span>':''}${it.new?'<span class="st-hot-tag" style="background:linear-gradient(135deg,#A855F7,#C084FC)">新品</span>':''}
+        <div class="sc-icon">${it.icon}</div><div class="sc-name">${it.name}</div>
+        <div class="sc-desc">${it.desc}</div><div class="sc-price">${owned?'\u2705 已拥有':'\u{1FA99} '+it.price}</div>
+      </div>`;
+    }).join('')}</div>`;
+  });
+  document.getElementById('shop-view').innerHTML=`
+    <div class="shop-hdr">
+      <button onclick="renderMap()">\u2190</button>
+      <h2>${({xiyou:'\u{1F6D2} 西游珍宝阁', shuihu:'\u{1F6D2} 梁山聚义堂', sanguo:'\u{1F6D2} 三国军需库', honglou:'\u{1F6D2} 大观园珍玩斋', shenhua:'\u{1F6D2} 神话宝物阁', andersen:'\u{1F6D2} 童话奇珍铺', minjian:'\u{1F6D2} 民间百宝箱', tongnian:'\u{1F6D2} 童年记忆铺', tongyao_xia:'🛒 童谣百宝阁', meitounao:'🛒 糊涂改正铺', yuanwang:'🛒 愿望商铺', xiangfei:'🛒 想飞百宝铺', qisehua:'🛒 七色花百宝铺', shenbi:'🛒 神笔小铺', datouerzi:'🛒 小家童话铺', yiqi:'🛒 时光玩具铺', waitou:'🛒 木头桩寓言铺', daocaoren:'🛒 稻田童话铺', gelin:'🛒 黑森林童话铺', yuyan:'🛒 诸子寓言阁', kleilov:'🛒 雪原诗铺', yisuo:'🛒 希腊寓言铺', lafengdan:'🛒 凡尔赛诗笺阁', xila:'🛒 奥林匹斯神祇阁', shanhaijing:'🛒 昆仑藏经阁', jierjia:'🛒 尼尼微泥板阁', shiwan:'🛒 屋内科学阁', dadi:'🛒 地质考察阁', huichen:'🛒 拟人科普阁', renlei:'🛒 考古证据阁', oulu:'🛒 城堡奇珍阁', feizhou:'🛒 篝火宝物铺', eluosi:'🛒 大森林珍宝阁', yulai:'🛒 还乡河珍宝阁', aidejiaoyu:'🛒 爱的教育珍宝阁', lubinxun:'🛒 孤岛重建阁', qier:'🛒 鹅背环游堂', tangmu:'🛒 密西西比百宝阁', ailisi:'🛒 奇境珍奇铺'}[BOOK_ID] || '\u{1F6D2} 闯关宝物阁')}</h2>
+      <span class="shop-bal">\u{1FA99} ${S.coins}</span>
+    </div>
+    <div style="padding:0 16px 8px;font-size:11px;color:rgba(255,255,255,0.4)">${({xiyou:'取经路上的宝贝都在这！用闯关积分来换~', shuihu:'梁山好汉的家当！用积分换装备~', sanguo:'三国名将专属！用积分换装~', honglou:'大观园里的雅物！用积分换饰~', shenhua:'神话英雄的法宝！用积分换装~', andersen:'童话世界的小物件！用积分换装~', minjian:'传说世界的纪念品！用积分收藏~', tongnian:'童年记忆的小信物！用积分留念~', tongyao_xia:'摇啊摇~用积分换走最好玩的童谣道具吧~', meitounao:'笑一笑改一改~用积分换走改毛病的小道具吧~', yuanwang:'换一夜身份才懂得珍贵~用积分换一份家的礼物吧~', xiangfei:'承认+练习才会真飞~用积分换成长道具吧~', qisehua:'最后一片花瓣最珍贵~用积分换让别人开心的礼物吧~', shenbi:'画给该画的人~用积分换走神笔小道具吧~', datouerzi:'把日常变童话~用积分换走家的味道小道具吧~', yiqi:'把旧物变诗~用积分换走装着时间的小道具吧~', waitou:'把骄傲变谦虚~用积分换走看见外面的小道具吧~', daocaoren:'用积分换 100 年的中国童话——稻草人边框、童话家称号、小白船坐骑都在这里~', gelin:'用积分换 200 年的童话原型——格林册、玻璃鞋、骏马坐骑都在这里~', yuyan:'用积分换两千年的智慧——诸子简、寓言家称号、青牛坐骑都在这里~', kleilov:'用积分换克雷洛夫的诗——雪橇坐骑、诗人称号、镜子提示符都在这里~', yisuo:'用积分换 2500 年的智慧——伊索手卷、智者称号、飞马坐骑都在这里~', lafengdan:'用积分换 350 年的法国宫廷讽刺——凤凰话术卡、狐狸坐骑、太阳王诗人称号都在这里~', xila:'用积分换 2500 年的希腊英雄精神——飞马坐骑、潘多拉希望卡、普罗米修斯传人称号都在这里~', shanhaijing:'用积分换 2500 年的先民档案精神——烛龙坐骑、白泽指物卡、昆仑守望者称号都在这里~', jierjia:'用积分换 3000 年的苏美尔精神——恩奇都坐骑、长生草记忆卡、乌鲁克城墙守望者称号都在这里~', shiwan:'用积分换屋子里的科学奇迹——伊林头像框、对照组徽章、家庭实验室坐骑都在这里~', dadi:'用积分换李四光的礼物——四光公头像框、证据链徽章、冰川探险坐骑都在这里~', huichen:'用积分换高士其的礼物——科普之父头像框、菌儿小队坐骑、微观视角徽章都在这里~', renlei:'用积分换贾兰坡的礼物——考古学家头像框、四证据链徽章、周口店探险坐骑都在这里~', oulu:'用积分换取欧洲民间故事里的魔法物件与勇士勋章~', feizhou:'用积分换取非洲草原的部族鼓声与智慧勋章~', eluosi:'用积分换取俄罗斯大森林的魔法物件与灰狼勋章~', yulai:'用积分换取还乡河村的少年勋章与双视角徽章~', aidejiaoyu:'用积分换取意大利小学的家书勋章与日记本徽章~', lubinxun:'用积分换孤岛求生与殖民批判的纪念物～', qier:'骑鹅飞过瑞典——用积分换微观地理的小信物～', tangmu:'密西西比的顽童时光——用积分换童年最后一夏的纪念～', ailisi:'兔子洞里的奇境——用积分换语言游戏与逻辑悖论的小道具～'}[BOOK_ID] || '用闯关积分来换~')}</div>
+    ${shopHtml}
+    <div style="height:40px"></div>`;
+  showV('shop-view');
+}
+function buy(id){
+  const it=SHOP.find(x=>x.id===id);if(!it)return;
+  if(S.coins<it.price)return toast('\u274C 积分不足，继续闯关攒积分！');
+  S.coins-=it.price;S.owned.push(id);S.equipped[it.id.split('_')[0]]=id;save();
+  toast(`\u{1F389} 成功兑换\u300C${it.name}\u300D\uFF01`);openShop();
+}
+
+// ===== Toast =====
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+// ===== 启动 =====
+// 兜底：题库 js 加载失败 / 回落了 book，给用户明确提示
+try{
+  if(window.__quizDataMissing){
+    document.body.innerHTML = '<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:PingFang SC,sans-serif;text-align:center;padding:24px"><div style="font-size:48px;margin-bottom:16px">📚</div><div style="font-size:18px;font-weight:600;margin-bottom:8px">题库加载失败</div><div style="font-size:14px;opacity:0.7;margin-bottom:24px">请检查网络后重试，或返回首页选择其他书目。</div><button onclick="location.href=\'v11.html\'" style="background:#FF6B35;color:#fff;border:none;padding:12px 32px;border-radius:24px;font-size:14px">返回首页</button></div>';
+  } else {
+    if(window.__quizBookFallback){
+      setTimeout(function(){ try{ toast('未识别书目「'+window.__quizBookFallback+'」，已为您切换到《西游记》'); }catch(_){} }, 600);
+    }
+    renderMap();
+  }
+}catch(e){
+  try{ console.error('[quiz-game] boot fail', e); }catch(_){}
+  document.body.innerHTML = '<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:sans-serif">页面加载异常，请刷新重试。</div>';
+}
+
+// 窗口尺寸变化时重新渲染（横竖切换）
+let _resizeTimer;
+window.addEventListener('resize',function(){
+  clearTimeout(_resizeTimer);
+  _resizeTimer=setTimeout(function(){
+    if(document.getElementById('map-view')&&!document.getElementById('map-view').classList.contains('hidden')){
+      renderMap();
+    }
+  },300);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暑期阅读活动方案 · 三年级</title>
+<style>
+  :root {
+    --cream: #fdf8f0;
+    --warm-white: #fffef9;
+    --forest: #2d5016;
+    --forest-light: #4a7c2e;
+    --gold: #c4752b;
+    --gold-light: #f5e6d3;
+    --text: #3b2e1e;
+    --text-light: #6b5d4f;
+    --card-border: #e8dcc8;
+    --accent-red: #c0392b;
+    --passbook-blue: #1a3a5c;
+    --passbook-cream: #faf3e6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Serif SC", Georgia, serif;
+    background: #f5efe0;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* ===== 打印样式 ===== */
+  @media print {
+    body { background: white; font-size: 12px; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+    .activity-detail { display: block !important; }
+
+    /* 保留配色 — 关键！ */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    .passbook-header { background: linear-gradient(135deg, #1a3a5c, #2c5f8a) !important; color: white !important; }
+    .passbook-header h3 { color: white !important; }
+    .passbook-body { background: linear-gradient(180deg, #faf6ed 0%, #f5ecd7 100%) !important; }
+    .passbook { background: linear-gradient(180deg, #faf6ed 0%, #f5ecd7 100%) !important; border: 2px solid #c4a97d !important; }
+    .stat-num { background: linear-gradient(135deg, #c4752b, #e8964a) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+    .week-label { background: #f5ecd7 !important; color: #2d5016 !important; }
+    .passbook-table th { background: #1a3a5c !important; color: white !important; }
+    .passbook-table td { background: white !important; }
+    .passbook-table tr:nth-child(even) td { background: #fefdf9 !important; }
+    .check-cell.checked { background: #e8f5e9 !important; border-color: #2d5016 !important; color: #2d5016 !important; }
+    .book-cover { color: white !important; }
+    .tag-must { background: #fde8e8 !important; color: #c0392b !important; }
+    .tag-opt { background: #e8f5e9 !important; color: #2d5016 !important; }
+    .cover { background: linear-gradient(135deg, #fffef9 0%, #fdf6e8 50%, #faf0d7 100%) !important; }
+    .cover h1 { color: #2d5016 !important; }
+    .grade-tag { background: #2d5016 !important; color: white !important; }
+    .section-card h2 { color: #2d5016 !important; }
+    .section-card { background: #fffef9 !important; }
+    .tip-num { background: #f5e6d3 !important; color: #c4752b !important; }
+    .activity-icon.warm { background: #fff3e0 !important; }
+    .activity-icon.cool { background: #e8f5e9 !important; }
+    .activity-icon.vivid { background: #ede7f6 !important; }
+    .material-tag { background: #f5efe0 !important; }
+  }
+
+  /* ===== 页面容器 ===== */
+  .page-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+
+  /* ===== 顶栏（工具条） ===== */
+  .toolbar {
+    display: flex; justify-content: flex-end; gap: 10px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .toolbar .btn {
+    padding: 10px 20px; border: none; border-radius: 8px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .btn-print { background: var(--forest); color: white; }
+  .btn-print:hover { background: var(--forest-light); }
+  .btn-share { background: white; color: var(--forest); border: 1.5px solid var(--forest); }
+  .btn-share:hover { background: var(--gold-light); }
+
+  /* ===== 封面卡片 ===== */
+  .cover {
+    background: linear-gradient(135deg, #fffef9 0%, #fdf6e8 50%, #faf0d7 100%);
+    border-radius: 20px; padding: 60px 50px; text-align: center;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    border: 1px solid var(--card-border);
+    position: relative; overflow: hidden;
+    margin-bottom: 30px;
+  }
+  .cover::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,117,43,0.08), transparent 70%);
+  }
+  .cover::after {
+    content: ''; position: absolute; bottom: -40px; left: -40px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,80,22,0.06), transparent 70%);
+  }
+  .cover-icon { font-size: 48px; margin-bottom: 16px; position: relative; z-index: 1; }
+  .cover h1 { font-size: 32px; font-weight: 800; color: var(--forest); margin-bottom: 8px; position: relative; z-index: 1; }
+  .cover .grade-tag {
+    display: inline-block; background: var(--forest); color: white;
+    padding: 4px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;
+    margin-bottom: 20px; position: relative; z-index: 1;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .cover .meta {
+    font-size: 14px; color: var(--text-light); position: relative; z-index: 1;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .cover .meta span { margin: 0 12px; }
+  .cover .cover-quote {
+    margin-top: 24px; padding: 16px 24px;
+    border-left: 3px solid var(--gold); font-style: italic;
+    color: var(--text-light); font-size: 15px; text-align: left;
+    background: rgba(255,255,255,0.6); border-radius: 0 8px 8px 0;
+    position: relative; z-index: 1;
+  }
+
+  /* ===== 内容卡片 ===== */
+  .section-card {
+    background: var(--warm-white);
+    border-radius: 16px; padding: 36px 40px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid var(--card-border);
+    margin-bottom: 24px;
+  }
+  .section-card h2 {
+    font-size: 22px; font-weight: 800; color: var(--forest);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-card h2 .icon { font-size: 26px; }
+  .section-card h3 {
+    font-size: 17px; font-weight: 700; color: #4a3728;
+    margin: 24px 0 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--gold-light);
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .section-card p, .section-card li {
+    font-size: 15px; color: var(--text); line-height: 2;
+  }
+  .section-card ul { padding-left: 20px; }
+  .section-card li { margin-bottom: 6px; }
+
+  /* ===== 书单卡片 ===== */
+  .book-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .book-card {
+    display: flex; gap: 14px; padding: 18px;
+    background: linear-gradient(135deg, #fefefe, #fcf8f0);
+    border-radius: 12px; border: 1px solid var(--card-border);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .book-card:hover {
+    transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .book-cover {
+    width: 52px; height: 74px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: white;
+    flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .book-info h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .book-info .tag {
+    font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 10px;
+    display: inline-block; margin-bottom: 6px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .tag-must { background: #fde8e8; color: #c0392b; }
+  .tag-opt { background: #e8f5e9; color: #2d5016; }
+  .book-info .reason { font-size: 12px; color: var(--text-light); line-height: 1.6; }
+
+  @media (max-width: 600px) {
+    .book-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 阅读存折 ===== */
+  .passbook-wrapper {
+    margin-top: 16px;
+  }
+  .passbook {
+    background: linear-gradient(180deg, #faf6ed 0%, #f5ecd7 100%);
+    border: 2px solid #c4a97d;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 16px rgba(139,109,69,0.12);
+  }
+  .passbook-header {
+    background: linear-gradient(135deg, #1a3a5c, #2c5f8a);
+    color: white; padding: 20px 28px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .passbook-header .pb-logo {
+    width: 48px; height: 48px; background: rgba(255,255,255,0.15);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 28px;
+  }
+  .passbook-header h3 { 
+    color: white !important; font-size: 20px; margin: 0 !important;
+    padding: 0 !important; border: none !important;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .passbook-header .pb-sub {
+    font-size: 13px; opacity: 0.85;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .passbook-body { padding: 8px 16px 20px; }
+  .passbook-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 12px;
+  }
+  .stat-item {
+    text-align: center; padding: 12px 8px;
+    background: white; border-radius: 10px;
+    border: 1px solid #e8dcc8;
+  }
+  .stat-num {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, #c4752b, #e8964a);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .stat-label {
+    font-size: 12px; color: var(--text-light); margin-top: 2px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  .passbook-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .passbook-table th {
+    background: #1a3a5c; color: white; padding: 10px 12px;
+    font-size: 12px; font-weight: 600; text-align: center;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .passbook-table td {
+    padding: 10px 12px; text-align: center; font-size: 13px;
+    border-bottom: 1px dashed #d4c4a8; background: white;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .passbook-table tr:nth-child(even) td { background: #fefdf9; }
+  .passbook-table .week-label {
+    background: #f5ecd7; font-weight: 700; color: var(--forest);
+    font-size: 12px;
+  }
+  .stamp-cell { font-size: 20px; }
+  .check-cell {
+    width: 36px; height: 36px; border: 2px solid #c4a97d; border-radius: 8px;
+    margin: 0 auto; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; font-size: 18px; color: transparent;
+  }
+  .check-cell::after { content: '\2713'; color: transparent; }
+  .check-cell.checked { background: #e8f5e9; border-color: var(--forest); }
+  .check-cell.checked::after { color: var(--forest); }
+  .check-cell:hover { border-color: var(--forest); background: #f0f8f0; }
+
+  @media (max-width: 600px) {
+    .passbook-stats { grid-template-columns: repeat(2, 1fr); }
+    .passbook-table { font-size: 11px; }
+    .passbook-table th, .passbook-table td { padding: 6px 4px; }
+  }
+
+  /* ===== 活动板块 ===== */
+  .activities-grid {
+    display: grid; gap: 16px;
+  }
+  .activity-card {
+    background: white; border: 1.5px solid var(--card-border);
+    border-radius: 14px; overflow: hidden;
+    transition: all 0.3s; cursor: pointer;
+  }
+  .activity-card:hover {
+    border-color: var(--gold); box-shadow: 0 4px 20px rgba(196,117,43,0.12);
+  }
+  .activity-header {
+    padding: 20px 24px; display: flex; align-items: center;
+    gap: 16px; position: relative;
+  }
+  .activity-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; flex-shrink: 0;
+  }
+  .activity-icon.warm { background: #fff3e0; }
+  .activity-icon.cool { background: #e8f5e9; }
+  .activity-icon.vivid { background: #ede7f6; }
+  .activity-info { flex: 1; }
+  .activity-info h3 {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    margin: 0 !important; padding: 0 !important; border: none !important;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .activity-info .a-sub {
+    font-size: 13px; color: var(--text-light); margin-top: 3px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .activity-arrow {
+    font-size: 14px; color: #ccc; transition: transform 0.3s;
+  }
+  .activity-card.expanded .activity-arrow { transform: rotate(180deg); }
+
+  .activity-detail {
+    display: none; padding: 0 24px 24px;
+    border-top: 1px dashed var(--card-border);
+  }
+  .activity-card.expanded .activity-detail { display: block; }
+
+  .activity-detail h4 {
+    font-size: 14px; font-weight: 700; color: var(--forest);
+    margin: 20px 0 8px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .activity-detail p, .activity-detail li {
+    font-size: 14px; color: var(--text); line-height: 1.9;
+  }
+  .activity-detail .steps {
+    background: #f9fafb; border-radius: 10px; padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .activity-detail .steps li { margin-bottom: 10px; }
+  .activity-detail .steps li:last-child { margin-bottom: 0; }
+
+  .activity-materials {
+    display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0;
+  }
+  .material-tag {
+    padding: 4px 14px; background: #f5efe0; border-radius: 14px;
+    font-size: 12px; color: var(--text-light);
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  .act-actions {
+    display: flex; gap: 10px; margin-top: 16px;
+  }
+  .act-btn {
+    padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--forest);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; background: white; color: var(--forest);
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .act-btn:hover { background: var(--forest); color: white; }
+  .act-btn.primary { background: var(--forest); color: white; }
+  .act-btn.primary:hover { background: var(--forest-light); }
+
+  /* ===== 家长建议 & 开学衔接 ===== */
+  .tips-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .tip-item {
+    padding: 16px 18px; background: #fefdf9; border-radius: 10px;
+    border: 1px solid var(--card-border);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .tip-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gold-light); color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; flex-shrink: 0;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .tip-text { font-size: 14px; color: var(--text); line-height: 1.7; }
+  .tip-text strong { color: var(--forest); }
+  @media (max-width: 600px) { .tips-grid { grid-template-columns: 1fr; } }
+
+  /* ===== 页脚 ===== */
+  .footer {
+    text-align: center; padding: 24px; color: #b8a88a;
+    font-size: 13px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  /* ===== Toast 提示 ===== */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--forest); color: white; padding: 12px 28px;
+    border-radius: 30px; font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    z-index: 1000; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== 打印时隐藏互动元素 ===== */
+  @media print {
+    .activity-arrow { display: none !important; }
+    .act-btn, .btn-print, .btn-share, .toolbar { display: none !important; }
+    .activity-detail { display: block !important; }
+    .check-cell { border: 2px solid #666 !important; }
+    .check-cell.checked { background: #e8f5e9 !important; border-color: #2d5016 !important; }
+    .cover { break-inside: avoid; }
+    .section-card { break-inside: avoid; box-shadow: none !important; }
+    .activity-card { break-inside: avoid; }
+  }
+</style>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'426542fbded8468782f2876fcb40f929'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- 工具条 -->
+  <div class="toolbar no-print">
+    <button class="btn btn-share" onclick="copyLink()">复制链接</button>
+    <button class="btn btn-print" onclick="window.print()">打印方案</button>
+  </div>
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-icon">📚</div>
+    <h1>暑期阅读活动方案</h1>
+    <div class="grade-tag">三年级</div>
+    <div class="meta">适用年级 三年级<span>|</span>45人以上<span>|</span>2026年暑假</div>
+    <div class="cover-quote">「阅读是一座随身携带的避难所」—— 这个暑假，陪孩子用书本丈量世界</div>
+  </div>
+
+  <!-- 一、总体目标 -->
+  <div class="section-card">
+    <h2><span class="icon">🎯</span>一、总体目标</h2>
+    <p>针对三年级升四年级学生，结合4年级上册语文教材'快乐读书吧'神话主题单元要求，引导学生在暑假完成从'被动阅读'到'主动阅读'的过渡，激发对神话故事和科普读物的兴趣，初步掌握'读、思、记、讲'四步阅读法，养成每日30分钟自主阅读的习惯，为四年级语文学习打下扎实基础。</p>
+  </div>
+
+  <!-- 二、推荐书单 -->
+  <div class="section-card">
+    <h2><span class="icon">📖</span>二、推荐书单</h2>
+    <h3>必读书目（全班共读 4 本）</h3>
+    <div class="book-grid">
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#e74c3c,#c0392b);">中</div>
+        <div class="book-info">
+          <h4>《《中国古代神话》（袁珂）》</h4>
+          <span class="tag tag-must">必读</span>
+          <div class="reason">四上'快乐读书吧'指定书目，感受中华神话魅力，了解民族文化根源</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#2ecc71,#27ae60);">希</div>
+        <div class="book-info">
+          <h4>《《希腊神话故事》（施瓦布）》</h4>
+          <span class="tag tag-must">必读</span>
+          <div class="reason">四上'快乐读书吧'推荐，与中国神话对比阅读，拓展世界文化视野</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#3498db,#2980b9);">十</div>
+        <div class="book-info">
+          <h4>《《十万个为什么》（米·伊林）》</h4>
+          <span class="tag tag-must">必读</span>
+          <div class="reason">四下'快乐读书吧'指定书目，激发科学探究兴趣，培养提问意识</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);">灰</div>
+        <div class="book-info">
+          <h4>《《灰尘的旅行》（高士其）》</h4>
+          <span class="tag tag-must">必读</span>
+          <div class="reason">四下'快乐读书吧'推荐，趣味科普文学，学习科学家的观察方法</div>
+        </div>
+      </div>
+    </div>
+    <h3>选读书目（推荐 4 本，自主选择）</h3>
+    <div class="book-grid">
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#e67e22,#d35400);">宝</div>
+        <div class="book-info">
+          <h4>《《宝葫芦的秘密》（张天翼）》</h4>
+          <span class="tag tag-opt">选读</span>
+          <div class="reason">经典童话，语言生动，与神话主题相呼应</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#1abc9c,#16a085);">稻</div>
+        <div class="book-info">
+          <h4>《《稻草人》（叶圣陶）》</h4>
+          <span class="tag tag-opt">选读</span>
+          <div class="reason">中国童话开山之作，文字优美，适合朗读</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#34495e,#2c3e50);">吹</div>
+        <div class="book-info">
+          <h4>《《吹小号的天鹅》（E.B.怀特）》</h4>
+          <span class="tag tag-opt">选读</span>
+          <div class="reason">温暖励志的动物小说，培养坚持与勇气</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover" style="background:linear-gradient(135deg,#f39c12,#e67e22);">一</div>
+        <div class="book-info">
+          <h4>《《一只想飞的猫》（陈伯吹）》</h4>
+          <span class="tag tag-opt">选读</span>
+          <div class="reason">短篇童话，三升四过渡阅读，轻松易读</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 三、阅读存折 -->
+  <div class="section-card">
+    <h2><span class="icon">🏦</span>三、我的阅读存折</h2>
+    <p style="margin-bottom:16px;font-size:14px;color:var(--text-light);">
+      每读完一本书就是存入一笔「精神财富」💎 完成全部必读书目可获得「暑期阅读小富翁」称号！
+      <button class="act-btn" style="margin-left:12px;vertical-align:middle;padding:6px 16px;font-size:12px;" onclick="event.stopPropagation();downloadPassbook()">📥 下载阅读存折</button>
+      <button class="act-btn" style="margin-left:8px;vertical-align:middle;padding:6px 16px;font-size:12px;background:var(--passbook-blue);color:white;border-color:var(--passbook-blue);" onclick="event.stopPropagation();printPassbook()">🖨️ 打印/保存PDF</button>
+    </p>
+    <div class="passbook-wrapper">
+      <div class="passbook">
+        <div class="passbook-header">
+          <div class="pb-logo">📒</div>
+          <div>
+            <h3 style="color:white;margin:0;padding:0;border:none;font-size:20px;">阅读存折</h3>
+            <div class="pb-sub">户名：________ &nbsp; | &nbsp; 年级：三年级 &nbsp; | &nbsp; 暑假 2026</div>
+          </div>
+        </div>
+        <div class="passbook-body">
+          <div class="passbook-stats">
+            <div class="stat-item"><div class="stat-num" id="totalBooks">0</div><div class="stat-label">已读书（本）</div></div>
+            <div class="stat-item"><div class="stat-num" id="totalPages">0</div><div class="stat-label">阅读页数</div></div>
+            <div class="stat-item"><div class="stat-num" id="totalDays">0</div><div class="stat-label">坚持天数</div></div>
+            <div class="stat-item"><div class="stat-num">🏆</div><div class="stat-label" id="badgeText">待解锁</div></div>
+          </div>
+          <table class="passbook-table">
+            <thead><tr>
+              <th style="width:12%">周次</th><th style="width:22%">书目</th><th style="width:18%">阅读日期</th>
+              <th style="width:10%">页数</th><th style="width:18%">家长签字</th><th style="width:10%">打卡</th><th style="width:10%">印章</th>
+            </tr></thead>
+            <tbody>
+          <tr>
+            <td class="week-label" rowspan="2">第1周<br>7/6-7/12</td>
+            <td>《中国古代神话》（袁珂）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td class="week-label" rowspan="2">第2周<br>7/13-7/19</td>
+            <td>《希腊神话故事》（施瓦布）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td class="week-label" rowspan="2">第3周<br>7/20-7/26</td>
+            <td>《十万个为什么》（米·伊林）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td class="week-label" rowspan="2">第4周<br>7/27-8/2</td>
+            <td>《灰尘的旅行》（高士其）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td class="week-label" rowspan="2">第5周<br>8/3-8/9</td>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td class="week-label" rowspan="2">第6周<br>8/10-8/16</td>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr>
+          <tr>
+            <td>（自选书目）</td>
+            <td>__/__</td><td>___</td><td>________</td>
+            <td><div class="check-cell"></div></td><td></td>
+          </tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:13px;color:var(--text-light);text-align:center;">
+      💡 打印后贴在书桌前，每周打勾完成 → 开学带回来兑换「阅读小状元」奖状
+    </p>
+  </div>
+
+  <!-- 四、阅读活动建议 -->
+  <div class="section-card">
+    <h2><span class="icon">🎪</span>四、阅读活动建议</h2>
+    <p style="margin-bottom:20px;font-size:14px;color:var(--text-light);">
+      每个活动均可独立完成，也可与同学线上互动。点击展开查看详细设计，支持下载打印。
+    </p>
+    <div class="activities-grid">
+      <div class="activity-card" id="activity1" onclick="toggleActivity('activity1')">
+        <div class="activity-header">
+          <div class="activity-icon warm">🎨</div>
+          <div class="activity-info">
+            <h3>活动1：我的神话小书签（独立完成）</h3>
+            <div class="a-sub">学生独立为读过的神话人物制作一套手绘书签</div>
+          </div>
+          <div class="activity-arrow">&#9660;</div>
+        </div>
+        <div class="activity-detail">
+          <h4>活动目标</h4>
+          <p>通过提取人物特点、绘画再现，加深对神话人物的理解和记忆</p>
+          <h4>操作步骤</h4>
+          <ol class="steps"><li>准备硬卡纸，裁成6cm×18cm长条，共8张</li><li>每张书签正面绘制一位中国或希腊神话人物（如女娲、夸父、宙斯、雅典娜）</li><li>背面写上人物姓名、神力特点、代表故事一句话</li><li>打孔系上彩绳，开学带回学校展示</li></ol>
+          <h4>所需材料</h4>
+          <div class="activity-materials"><span class="material-tag">彩色卡纸</span><span class="material-tag">彩笔或水彩</span><span class="material-tag">打孔器</span><span class="material-tag">彩色绳子</span></div>
+          <h4>评价标准</h4><p>完成数量（4张合格、6张良好、8张优秀）+ 信息准确性 + 美观度</p>
+          <div class="act-actions">
+            <button class="act-btn primary" onclick="event.stopPropagation();downloadActivity('我的神话小书签（独立完成）')">下载活动设计</button>
+            <button class="act-btn" onclick="event.stopPropagation();printActivity('activity1')">打印此活动</button>
+          </div>
+        </div>
+      </div>
+      <div class="activity-card" id="activity2" onclick="toggleActivity('activity2')">
+        <div class="activity-header">
+          <div class="activity-icon cool">🎤</div>
+          <div class="activity-info">
+            <h3>活动2：神话故事接龙群（线上互动）</h3>
+            <div class="a-sub">通过班级微信群进行每周一次的语音故事接龙</div>
+          </div>
+          <div class="activity-arrow">&#9660;</div>
+        </div>
+        <div class="activity-detail">
+          <h4>活动目标</h4>
+          <p>锻炼口头表达能力，相互督促阅读，营造班级阅读氛围</p>
+          <h4>操作步骤</h4>
+          <ol class="steps"><li>老师将45名学生分成6组，每组7-8人</li><li>每周日晚7点，由当周值日组在群内发起神话接龙，每人60秒语音讲述一个神话片段</li><li>下一位同学要从上一位结束处续讲，形成完整故事</li><li>老师每周点评1-2位讲得精彩的同学，发送小红花表情鼓励</li></ol>
+          <h4>所需材料</h4>
+          <div class="activity-materials"><span class="material-tag">班级微信群</span><span class="material-tag">每周值日组安排表</span><span class="material-tag">简易点评模板</span></div>
+          <h4>评价标准</h4><p>参与率（每生至少3次）+ 讲述清晰度 + 同学互评点赞数</p>
+          <div class="act-actions">
+            <button class="act-btn primary" onclick="event.stopPropagation();downloadActivity('神话故事接龙群（线上互动）')">下载活动设计</button>
+            <button class="act-btn" onclick="event.stopPropagation();printActivity('activity2')">打印此活动</button>
+          </div>
+        </div>
+      </div>
+      <div class="activity-card" id="activity3" onclick="toggleActivity('activity3')">
+        <div class="activity-header">
+          <div class="activity-icon vivid">📝</div>
+          <div class="activity-info">
+            <h3>活动3：'十万个为什么'探究本（创意类）</h3>
+            <div class="a-sub">结合《十万个为什么》和《灰尘的旅行》，制作一本属于自己的探究小册子</div>
+          </div>
+          <div class="activity-arrow">&#9660;</div>
+        </div>
+        <div class="activity-detail">
+          <h4>活动目标</h4>
+          <p>培养科学提问意识，把阅读与生活观察结合起来</p>
+          <h4>操作步骤</h4>
+          <ol class="steps"><li>准备一本A5空白本，封面自己设计书名'我的十万个为什么'</li><li>每天观察生活中一个现象，写下1个问题（如：为什么蚂蚁排队走？）</li><li>在书中查找答案或与家长讨论后记录，配一幅简笔画</li><li>暑假累计记录至少20个问题，开学带回评选'小小科学家'</li></ol>
+          <h4>所需材料</h4>
+          <div class="activity-materials"><span class="material-tag">A5空白笔记本</span><span class="material-tag">彩笔</span><span class="material-tag">《十万个为什么》</span><span class="material-tag">放大镜（可选）</span></div>
+          <h4>评价标准</h4><p>问题数量（15个合格、20个良好、25个以上优秀）+ 问题原创性 + 答案完整度</p>
+          <div class="act-actions">
+            <button class="act-btn primary" onclick="event.stopPropagation();downloadActivity(''十万个为什么'探究本（创意类）')">下载活动设计</button>
+            <button class="act-btn" onclick="event.stopPropagation();printActivity('activity3')">打印此活动</button>
+          </div>
+        </div>
+      </div></div>
+  </div>
+
+  <!-- 五、家长配合建议 -->
+  <div class="section-card">
+    <h2><span class="icon">👨‍👩‍👧</span>五、家长配合建议</h2>
+    <div class="tips-grid">
+      <div class="tip-item">
+        <div class="tip-num">1</div>
+        <div class="tip-text">每天固定30分钟为'家庭共读时间'（建议晚饭后或睡前），家长放下手机一同阅读，给孩子做榜样</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-num">2</div>
+        <div class="tip-text">针对班级'尚未系统推行阅读教学'的情况，请家长重点配合习惯养成，不要追求阅读速度，慢慢来</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-num">3</div>
+        <div class="tip-text">孩子复述故事时，请耐心倾听，不打断、不纠错，听完后问一句'你最喜欢哪个人物？为什么？'</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-num">4</div>
+        <div class="tip-text">周末可以全家一起看一集神话主题纪录片或动画（如《中国神话故事》动画版），加深理解</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-num">5</div>
+        <div class="tip-text">为孩子准备一个固定的阅读角，光线充足、远离电视，配一个小书架放暑假阅读书目</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-num">6</div>
+        <div class="tip-text">若孩子遇到生字不必每个都查，鼓励先猜读、跳读，每天集中查3-5个重点字即可，避免挫败感</div>
+      </div></div>
+  </div>
+
+  <!-- 六、开学衔接 -->
+  <div class="section-card">
+    <h2><span class="icon">🏫</span>六、开学衔接建议</h2>
+    <ul><li>开学第一周举办'神话故事会'，每位学生上台讲1个最喜欢的神话故事（3分钟内），既是展示也是摸底</li><li>收集学生的'神话小书签'布置教室阅读角文化墙，让阅读成果可视化</li><li>评选暑期阅读'小小科学家'（探究本最佳）、'故事大王'（接龙最积极）、'插画达人'（书签最美）三个奖项，每项6-8人</li><li>结合四年级上册第四单元'神话'课文教学（《盘古开天地》《精卫填海》等），让暑假阅读成为课堂学习的支架</li><li>建立班级'晨读10分钟'制度，延续暑假阅读习惯，从神话故事自然过渡到四年级整本书阅读教学</li></ul>
+  </div>
+
+  <div class="footer">—— 智慧阅读教学平台 · 暑期阅读活动方案 ——</div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+function toggleCheck(el) { el.classList.toggle('checked'); updateStats(); }
+function updateStats() {
+  const checks = document.querySelectorAll('.check-cell.checked').length;
+  document.getElementById('totalBooks').textContent = Math.floor(checks / 2);
+  document.getElementById('totalPages').textContent = checks * 45;
+  document.getElementById('totalDays').textContent = checks * 2;
+  const badge = document.getElementById('badgeText');
+  if (checks >= 12) { badge.textContent = '💰 阅读小富翁'; badge.style.fontSize = '12px'; }
+  else if (checks >= 8) { badge.textContent = '⭐ 银牌读者'; badge.style.fontSize = '13px'; }
+  else if (checks >= 4) { badge.textContent = '🔖 铜牌读者'; badge.style.fontSize = '13px'; }
+  else { badge.textContent = '待解锁'; }
+}
+function toggleActivity(id) { document.getElementById(id).classList.toggle('expanded'); }
+
+function buildPassbookHTML(g) {
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>阅读存折 · ${g}</title><style>
+  :root{--forest:#2d5016;--gold:#c4752b;--gold-light:#f5e6d3;--text:#3b2e1e;--text-light:#6b5d4f;--card-border:#e8dcc8;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"PingFang SC","Microsoft YaHei",serif;background:#f5efe0;color:var(--text);line-height:1.8;padding:20px;}
+  .page-wrapper{max-width:780px;margin:0 auto;}
+  .passbook{background:linear-gradient(180deg,#faf6ed,#f5ecd7);border:2px solid #c4a97d;border-radius:14px;overflow:hidden;box-shadow:0 3px 16px rgba(139,109,69,0.12);}
+  .passbook-header{background:linear-gradient(135deg,#1a3a5c,#2c5f8a);color:white;padding:20px 28px;display:flex;align-items:center;gap:16px;}
+  .pb-logo{width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;}
+  .passbook-header h3{color:white;font-size:20px;margin:0;padding:0;border:none;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .pb-sub{font-size:13px;opacity:0.85;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .passbook-body{padding:8px 16px 20px;}
+  .passbook-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 12px;}
+  .stat-item{text-align:center;padding:12px 8px;background:white;border-radius:10px;border:1px solid #e8dcc8;}
+  .stat-num{font-size:28px;font-weight:800;background:linear-gradient(135deg,#c4752b,#e8964a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .stat-label{font-size:12px;color:var(--text-light);margin-top:2px;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .passbook-table{width:100%;border-collapse:collapse;margin-top:8px;}
+  .passbook-table th{background:#1a3a5c;color:white;padding:10px 12px;font-size:12px;font-weight:600;text-align:center;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .passbook-table td{padding:10px 12px;text-align:center;font-size:13px;border-bottom:1px dashed #d4c4a8;background:white;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  .passbook-table tr:nth-child(even) td{background:#fefdf9;}
+  .week-label{background:#f5ecd7;font-weight:700;color:var(--forest);font-size:12px;}
+  .check-cell{width:36px;height:36px;border:2px solid #c4a97d;border-radius:8px;margin:0 auto;}
+  .print-hint{text-align:center;padding:20px;color:#b8a88a;font-size:13px;}
+  @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}body{background:white;font-size:12px;padding:0;}.print-hint{display:none;}.passbook{box-shadow:none;}.passbook-header{background:linear-gradient(135deg,#1a3a5c,#2c5f8a)!important;color:white!important;}.passbook-header h3{color:white!important;}.passbook-body{background:linear-gradient(180deg,#faf6ed,#f5ecd7)!important;}.stat-num{background:linear-gradient(135deg,#c4752b,#e8964a)!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;}.passbook-table th{background:#1a3a5c!important;color:white!important;}.week-label{background:#f5ecd7!important;}}
+  </style></head><body><div class="page-wrapper"><div class="passbook"><div class="passbook-header"><div class="pb-logo">📒</div><div><h3 style="color:white;margin:0;padding:0;border:none;font-size:20px;">阅读存折</h3><div class="pb-sub">户名：________ &nbsp;|&nbsp; 年级：${g} &nbsp;|&nbsp; 暑假 2026</div></div></div><div class="passbook-body"><div class="passbook-stats"><div class="stat-item"><div class="stat-num">0</div><div class="stat-label">已读书（本）</div></div><div class="stat-item"><div class="stat-num">0</div><div class="stat-label">阅读页数</div></div><div class="stat-item"><div class="stat-num">0</div><div class="stat-label">坚持天数</div></div><div class="stat-item"><div class="stat-num">🏆</div><div class="stat-label">待解锁</div></div></div><table class="passbook-table"><thead><tr><th>周次</th><th>书目</th><th>日期</th><th>页数</th><th>家长签字</th><th>打卡</th><th>印章</th></tr></thead><tbody><tr><td class="week-label" rowspan="2">第1周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td class="week-label" rowspan="2">第2周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td class="week-label" rowspan="2">第3周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td class="week-label" rowspan="2">第4周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td class="week-label" rowspan="2">第5周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td class="week-label" rowspan="2">第6周</td><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr><tr><td><br></td><td>__/__</td><td>___</td><td>________</td><td><div class="check-cell"></div></td><td></td></tr></tbody></table></div></div><div class="print-hint">💡 Ctrl+P 另存为PDF，记得勾选"背景图形"保留配色</div></div></body></html>`;
+}
+
+function downloadPassbook() {
+  const html = buildPassbookHTML('三年级');
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = '阅读存折_三年级.html'; a.click();
+  showToast('✅ 阅读存折已下载！');
+}
+function printPassbook() {
+  const html = buildPassbookHTML('三年级');
+  const win = window.open('','_blank','width=800,height=900');
+  win.document.write(html); win.document.close();
+  setTimeout(()=>{win.print();},600);
+  showToast('🖨️ 正在准备打印存折...');
+}
+function downloadActivity(name) {
+  const content = document.querySelector(`[onclick*="${name}"]`).closest('.activity-card').querySelector('.activity-detail').innerHTML;
+  const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>阅读活动 - ${name}</title><style>body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;max-width:700px;margin:40px auto;padding:20px;line-height:1.8;color:#3b2e1e;}h4{color:#2d5016;margin-top:20px;}.steps{background:#f9fafb;border-radius:10px;padding:16px 24px;}.steps li{margin-bottom:10px;}.material-tag{padding:4px 14px;background:#f5efe0;border-radius:14px;font-size:12px;color:#6b5d4f;display:inline-block;margin:4px;}.act-actions{display:none;}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}.steps{background:#f9fafb!important;}.material-tag{background:#f5efe0!important;}}</style></head><body>${content}<p style="margin-top:30px;color:#999;text-align:center;">—— 智慧阅读教学平台 ——</p></body></html>`;
+  const blob = new Blob([html],{type:'text/html'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `阅读活动_${name}.html`; a.click();
+  showToast('✅ 活动设计已下载！');
+}
+function printActivity(id) {
+  const detail = document.getElementById(id).querySelector('.activity-detail').cloneNode(true);
+  const win = window.open('','_blank','width=800,height=600');
+  win.document.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>打印阅读活动</title><style>body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;max-width:700px;margin:40px auto;padding:20px;line-height:1.8;color:#3b2e1e;}h4{color:#2d5016;margin-top:20px;}.steps{background:#f9fafb;border-radius:10px;padding:16px 24px;}.steps li{margin-bottom:10px;}.material-tag{padding:4px 14px;background:#f5efe0;border-radius:14px;font-size:12px;color:#6b5d4f;}.act-actions{display:none;}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}.steps{background:#f9fafb!important;}.material-tag{background:#f5efe0!important;}}</style></head><body>${detail.outerHTML}<p style="margin-top:30px;color:#999;text-align:center;">—— 智慧阅读教学平台 ——</p></body></html>`);
+  win.document.close(); setTimeout(()=>{win.print();},500);
+}
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(()=>showToast('📋 链接已复制！')).catch(()=>showToast('⚠️ 复制失败'));
+}
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+updateStats();
+</script>
+</body></html>
