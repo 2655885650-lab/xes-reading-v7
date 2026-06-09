@@ -13,14 +13,14 @@
 <script>
 // 透传所有 query/hash，落地到 v11.html
 (function(){
-  var target = 'v11.html' + (location.search||'') + (location.hash||'');
+  var target = 'v11.html' + (location.search ? location.search + '&_v=1781002589' : '?_v=1781002589') + (location.hash||'');
   location.replace(target);
 })();
 </script>
-<meta http-equiv="refresh" content="0;url=v11.html">
+<meta http-equiv="refresh" content="0;url=v11.html?_v=1781002589">
 <style>html,body{margin:0;height:100%;display:flex;align-items:center;justify-content:center;font-family:-apple-system,"PingFang SC",sans-serif;color:#4E5969;background:#F7F8FA}</style>
 </head>
 <body>
-<div>正在打开学而思智慧阅读…<br><a href="v11.html">如果未跳转请点这里</a></div>
+<div>正在打开学而思智慧阅读…<br><a href="v11.html?_v=1781002589">如果未跳转请点这里</a></div>
 </body>
 </html>
